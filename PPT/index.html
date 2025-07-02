@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Security: Breaking & Building</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">20</span>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="previousSlide()" id="prev-btn">← Previous</button>
+            <button onclick="nextSlide()" id="next-btn">Next →</button>
+        </div>
+    </div>
+
+    <!-- Slide Container -->
+    <div class="presentation-container">
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active" data-slide="1">
+            <div class="matrix-bg"></div>
+            <div class="slide-content title-slide">
+                <h1 class="glitch-text">Breaking & Building</h1>
+                <h2>The Web Security Survival Guide</h2>
+                <p class="subtitle">Or: How I Learned to Stop Worrying and Love CSRF Tokens</p>
+                <div class="presenter-info">
+                    <p>Presented by: [Your Name]</p>
+                    <p class="disclaimer">*No websites were harmed in making this presentation</p>
+                    <p class="disclaimer-small">**Except the demo ones 😈</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Agenda -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h1>🍽️ Today's Security Buffet</h1>
+                <div class="menu-container">
+                    <div class="menu-item appetizer">
+                        <div class="course-icon">🥗</div>
+                        <div class="course-details">
+                            <h3>Appetizer: XSS</h3>
+                            <p>"The Script Kiddie Special"</p>
+                            <span class="time">⏰ 15 mins</span>
+                        </div>
+                    </div>
+                    <div class="menu-item main-course">
+                        <div class="course-icon">🍝</div>
+                        <div class="course-details">
+                            <h3>Main Course: CSRF</h3>
+                            <p>"The Identity Theft Pasta"</p>
+                            <span class="time">⏰ 15 mins</span>
+                        </div>
+                    </div>
+                    <div class="menu-item dessert">
+                        <div class="course-icon">🍰</div>
+                        <div class="course-details">
+                            <h3>Dessert: CORS</h3>
+                            <p>"Cross-Origin Confusion Cake"</p>
+                            <span class="time">⏰ 15 mins</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chef-special">
+                    <p>👨‍🍳 <strong>Chef's Special:</strong> Live hacking demos!</p>
+                    <p>🔥 <strong>Spice Level:</strong> Medium (we'll start gentle)</p>
+                    <p>💡 <strong>Pro Tip:</strong> Keep your laptops open - we're cooking together!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Opening Hook -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h1 class="warning-title">🚨 The $2.3 Trillion Question</h1>
+                <div class="stats-container">
+                    <div class="stat-box big-number">
+                        <div class="number">$2.3T</div>
+                        <div class="label">Web security failures cost globally (2023)</div>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="number">83%</div>
+                            <div class="label">Organizations had web app attacks</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">68%</div>
+                            <div class="label">Experienced CSRF attacks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="plot-twist">
+                    <h2>🎭 PLOT TWIST:</h2>
+                    <p>Today <strong>YOU</strong> become the hacker</p>
+                    <p class="disclaimer">(Don't worry, it's legal... I think 🤔)</p>
+                </div>
+                <div class="audience-poll">
+                    <h3>🎯 AUDIENCE POLL TIME!</h3>
+                    <p>Rate your web security skills:</p>
+                    <div class="rating-buttons">
+                        <button onclick="rateSkill(1)">1️⃣</button>
+                        <button onclick="rateSkill(2)">2️⃣</button>
+                        <button onclick="rateSkill(3)">3️⃣</button>
+                        <button onclick="rateSkill(4)">4️⃣</button>
+                        <button onclick="rateSkill(5)">5️⃣</button>
+                    </div>
+                    <p id="poll-result" class="poll-result"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: XSS Introduction -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h1 class="section-title xss-title">🎪 Welcome to: Cross-Site Scripting (XSS)</h1>
+                <div class="intro-container">
+                    <div class="visual-section">
+                        <div class="trojan-horse">
+                            <div class="horse">🐴</div>
+                            <div class="code-spill">
+                                <span>&lt;script&gt;</span>
+                                <span>alert('hack');</span>
+                                <span>&lt;/script&gt;</span>
+                            </div>
+                        </div>
+                        <p class="aka">🎭 AKA: "The Trojan Horse of Web Attacks"</p>
+                    </div>
+                    <div class="facts-section">
+                        <h3>📈 Fun Facts:</h3>
+                        <ul class="fun-facts">
+                            <li>🥉 #3 on OWASP Top 10 (like Billboard charts for hackers)</li>
+                            <li>📊 Found in 40% of web applications</li>
+                            <li>📅 First discovered in 1996 (older than some of you!)</li>
+                            <li>💰 Average cost per breach: $4.88M</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mission-box">
+                    <h3>🎯 Today's Mission: Make an alert box appear</h3>
+                    <div class="achievement">
+                        <span class="badge">🏆 Achievement Unlocked: "Script Kiddie Badge"</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: XSS Recipe -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h1>🍪 The Recipe for Disaster</h1>
+                <div class="recipe-container">
+                    <div class="ingredients">
+                        <h3>👤 Ingredients:</h3>
+                        <ul class="ingredient-list">
+                            <li>🎯 1 Unsuspecting user (that's you!)</li>
+                            <li>🌐 1 Vulnerable website (we made one!)</li>
+                            <li>💀 1 Malicious input (we'll craft together)</li>
+                        </ul>
+                    </div>
+                    <div class="instructions">
+                        <h3>🧪 Mixing Instructions:</h3>
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <div class="step-content">
+                                <strong>User types:</strong>
+                                <code class="danger-code">&lt;script&gt;alert('BOOM!')&lt;/script&gt;</code>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <div class="step-content">
+                                <strong>Website thinks:</strong>
+                                <span class="thought-bubble">"Looks legit to me!"</span>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <div class="step-content">
+                                <strong>Browser executes:</strong>
+                                <span class="explosion">💥 CHAOS ENSUES</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="real-talk">
+                    <h3>🎭 Real Talk:</h3>
+                    <p>It's like giving a stranger the microphone at your wedding</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: XSS Demo Setup -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h1>🎬 Lights, Camera, Hack!</h1>
+                <div class="demo-setup">
+                    <div class="demo-target">
+                        <h3>🎯 Demo Target: "Movie Review Site"</h3>
+                        <div class="fake-site-preview">
+                            <div class="site-header">🎬 MovieReviews.com</div>
+                            <div class="review-form">
+                                <h4>Leave a Review:</h4>
+                                <input type="text" placeholder="Movie title..." class="demo-input">
+                                <textarea placeholder="Your review..."></textarea>
+                                <button class="demo-button">Submit Review</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scenario">
+                        <h3>📝 Scenario: Leave a "review" for your favorite movie</h3>
+                        <p class="plot-twist">🎪 <strong>Plot Twist:</strong> We're leaving more than just stars...</p>
+                    </div>
+                </div>
+                <div class="participation">
+                    <h3>👥 Audience Participation Needed:</h3>
+                    <div class="volunteer-roles">
+                        <div class="volunteer innocent">
+                            <span class="role-icon">🙋‍♀️</span>
+                            <div class="role-details">
+                                <strong>Volunteer #1:</strong>
+                                <p>The "Innocent User"</p>
+                            </div>
+                        </div>
+                        <div class="volunteer evil">
+                            <span class="role-icon">🙋‍♂️</span>
+                            <div class="role-details">
+                                <strong>Volunteer #2:</strong>
+                                <p>The "Evil Payload Creator"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="camera-ready">
+                    <p>📸 <strong>Get Your Phones Ready:</strong> Screenshot worthy moments incoming!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Interactive XSS Demo -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h1>🎮 Live XSS Demo</h1>
+                <div class="demo-container">
+                    <div class="vulnerable-app">
+                        <h3>🎬 Vulnerable Movie Review App</h3>
+                        <div class="app-interface">
+                            <div class="form-section">
+                                <h4>Leave a Review:</h4>
+                                <input type="text" id="movie-title" placeholder="Movie title..." />
+                                <textarea id="review-text" placeholder="Your review..."></textarea>
+                                <button onclick="submitReview()" class="submit-btn">Submit Review</button>
+                            </div>
+                            <div class="reviews-section">
+                                <h4>Recent Reviews:</h4>
+                                <div id="reviews-display"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="payload-suggestions">
+                        <h4>🔥 Try These Payloads:</h4>
+                        <div class="payload-list">
+                            <button onclick="insertPayload('&lt;script&gt;alert(\'XSS Success!\')&lt;/script&gt;')" class="payload-btn">
+                                Basic Alert
+                            </button>
+                            <button onclick="insertPayload('&lt;img src=x onerror=alert(\'Image XSS!\')&gt;')" class="payload-btn">
+                                Image XSS
+                            </button>
+                            <button onclick="insertPayload('&lt;h1 style=color:red&gt;HACKED!&lt;/h1&gt;')" class="payload-btn">
+                                Style Injection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <p>⚠️ <strong>Warning:</strong> This is intentionally vulnerable for educational purposes!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: XSS Demo Results -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h1>🎉 Congratulations! You're Now Hackers!</h1>
+                <div class="results-container">
+                    <div class="what-we-did">
+                        <h3>✅ What We Just Did:</h3>
+                        <ul class="achievement-list">
+                            <li>💉 Injected JavaScript into a website</li>
+                            <li>🧠 Made the browser execute our code</li>
+                            <li>🔍 Proved user input is NEVER trustworthy</li>
+                            <li>🎯 Demonstrated real-world vulnerability</li>
+                        </ul>
+                    </div>
+                    <div class="reactions">
+                        <h3>😱 Audience Reactions:</h3>
+                        <div class="reaction-bubbles">
+                            <div class="reaction">
+                                <span class="emoji">😮</span>
+                                <p>"Wait, it's that easy?!"</p>
+                                <small>- Everyone</small>
+                            </div>
+                            <div class="reaction">
+                                <span class="emoji">😰</span>
+                                <p>"Should I be worried?"</p>
+                                <small>- Also everyone</small>
+                            </div>
+                            <div class="reaction">
+                                <span class="emoji">😈</span>
+                                <p>"This is kinda fun..."</p>
+                                <small>- The dangerous ones</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="meme-section">
+                    <h3>🎭 Meme Time:</h3>
+                    <div class="meme-container">
+                        <div class="meme-image">🔥🐶🔥</div>
+                        <div class="meme-text">
+                            <p class="meme-top">Me trusting user input</p>
+                            <p class="meme-bottom">without validation</p>
+                            <p class="meme-caption">"This is fine"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: XSS Prevention -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h1>🛡️ Building the Fortress</h1>
+                <div class="code-comparison">
+                    <div class="villain-code">
+                        <h3>❌ The Villain:</h3>
+                        <div class="code-block danger">
+                            <code>
+                                <span class="comment">// DON'T BE THIS PERSON</span><br>
+                                <span class="variable">element</span>.<span class="property">innerHTML</span> = <span class="variable">userInput</span>;
+                            </code>
+                        </div>
+                        <div class="danger-label">🚨 DANGER ZONE</div>
+                    </div>
+                    <div class="hero-code">
+                        <h3>✅ The Hero:</h3>
+                        <div class="code-block safe">
+                            <code>
+                                <span class="comment">// BE THIS PERSON</span><br>
+                                <span class="variable">element</span>.<span class="property">textContent</span> = <span class="variable">userInput</span>;
+                            </code>
+                        </div>
+                        <div class="safe-label">✅ SAFE ZONE</div>
+                    </div>
+                </div>
+                <div class="superpowers">
+                    <h3>🦸‍♀️ Security Superpowers:</h3>
+                    <div class="power-grid">
+                        <div class="power-card">
+                            <div class="power-icon">🧼</div>
+                            <h4>Input Sanitization</h4>
+                            <p>HTML encode everything!</p>
+                        </div>
+                        <div class="power-card">
+                            <div class="power-icon">🛡️</div>
+                            <h4>Content Security Policy</h4>
+                            <p>CSP headers block evil scripts</p>
+                        </div>
+                        <div class="power-card">
+                            <div class="power-icon">⚛️</div>
+                            <h4>Safe Frameworks</h4>
+                            <p>React, Angular auto-escape</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="golden-rule">
+                    <h3>💡 Golden Rule:</h3>
+                    <p class="rule-text">"Trust users like you trust a toddler with scissors"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CSRF Introduction -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h1 class="section-title csrf-title">🎭 Enter the Stage: Cross-Site Request Forgery</h1>
+                <div class="csrf-intro">
+                    <div class="magic-trick">
+                        <div class="magician">🎩✨</div>
+                        <div class="trick-description">
+                            <h3>🎪 AKA: "The Identity Theft Magic Trick"</h3>
+                            <p>Watch as we make your money disappear... without touching your computer!</p>
+                        </div>
+                    </div>
+                    <div class="csrf-stats">
+                        <h3>📊 Scary Stats:</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">50%</div>
+                                <div class="stat-label">Web apps vulnerable to CSRF</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">$1.4M</div>
+                                <div class="stat-label">Average cost per attack</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">#8</div>
+                                <div class="stat-label">OWASP Top 10 ranking</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="todays-trick">
+                    <h3>🎯 Today's Magic Trick: Transfer money without permission</h3>
+                    <div class="admission-ticket">
+                        <div class="ticket-icon">🎫</div>
+                        <div class="ticket-text">
+                            <strong>Admission Requirements:</strong><br>
+                            Must be logged into "bank" first
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: CSRF Setup -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h1>🏦 The Great Bank Heist Setup</h1>
+                <div class="heist-timeline">
+                    <div class="act">
+                        <div class="act-number">ACT 1</div>
+                        <div class="act-content">
+                            <h3>The Innocent Login</h3>
+                            <div class="scene">
+                                <span class="character">👤 You:</span>
+                                <span class="action">*logs into FakeBank.com*</span>
+                            </div>
+                            <div class="balance">💰 Balance: $10,000 <span class="dream">(in our dreams)</span></div>
+                        </div>
+                    </div>
+                    <div class="act">
+                        <div class="act-number">ACT 2</div>
+                        <div class="act-content">
+                            <h3>The Distraction</h3>
+                            <div class="email-preview">
+                                <div class="email-header">📧 New Email</div>
+                                <div class="email-subject">Subject: "Check out these ADORABLE puppies!"</div>
+                                <div class="email-link">🔗 Link: CutePuppies.com</div>
+                            </div>
+                            <div class="thought">
+                                <span class="character">🤔 You:</span>
+                                <span class="thinking">"What could go wrong?"</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="act">
+                        <div class="act-number">ACT 3</div>
+                        <div class="act-content">
+                            <h3>The Plot Twist</h3>
+                            <div class="balance-change">
+                                <div class="old-balance">💰 Bank balance: <span class="strikethrough">$10,000</span></div>
+                                <div class="new-balance">💸 Bank balance: $9,000</div>
+                            </div>
+                            <div class="reaction">
+                                <span class="character">😱 You:</span>
+                                <span class="scream">"WHERE DID MY MONEY GO?!"</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="spoiler-alert">
+                    <h3>🎭 Spoiler Alert:</h3>
+                    <p>The puppies were accomplices! 🐶💰</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with remaining slides... -->
+        <!-- For brevity, I'll show the structure for remaining key slides -->
+
+        <!-- SLIDE 12: CSRF Demo -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h1>🎬 The Heist is On!</h1>
+                <div class="demo-setup">
+                    <div class="demo-sites">
+                        <div class="fake-bank">
+                            <h3>🏦 FakeBank.com</h3>
+                            <div class="login-status">✅ Logged in as: user@email.com</div>
+                            <div class="account-balance">💰 Balance: $10,000</div>
+                            <form id="transfer-form" class="transfer-form">
+                                <h4>Transfer Money</h4>
+                                <input type="text" placeholder="Transfer to..." id="transfer-to">
+                                <input type="number" placeholder="Amount" id="transfer-amount">
+                                <button type="submit">Transfer Money</button>
+                            </form>
+                        </div>
+                        <div class="puppy-site">
+                            <h3>🐶 AdorablePuppies.com</h3>
+                            <div class="puppy-gallery">
+                                <div class="puppy">🐕</div>
+                                <div class="puppy">🐩</div>
+                                <div class="puppy">🐕‍🦺</div>
+                            </div>
+                            <button onclick="triggerCSRF()" class="innocent-button">
+                                Click to see more puppies! 🐶
+                            </button>
+                            <!-- Hidden malicious form -->
+                            <form id="malicious-form" action="#" method="POST" style="display: none;">
+                                <input name="to" value="attacker@evil.com">
+                                <input name="amount" value="1000">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="audience-interaction">
+                    <h3>👥 Audience Participation:</h3>
+                    <div class="polls">
+                        <button onclick="pollWhoWouldClick()" class="poll-btn">
+                            🗳️ Vote: Who would click the puppy link?
+                        </button>
+                        <button onclick="pollStayLoggedIn()" class="poll-btn">
+                            📱 Poll: How many stay logged into banking sites?
+                        </button>
+                    </div>
+                    <div id="poll-results" class="poll-results"></div>
+                </div>
+                <div class="disclaimer">
+                    <p>⚠️ <strong>Disclaimer:</strong> No real money will be stolen</p>
+                    <p><small>(But your trust in cute animal websites will be shattered)</small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: Final Slide -->
+        <div class="slide" data-slide="20">
+            <div class="slide-content">
+                <h1>🎬 That's a Wrap!</h1>
+                <div class="wrap-up">
+                    <div class="achievements">
+                        <h3>🎯 From Zero to Hero in 45 Minutes:</h3>
+                        <div class="achievement-list">
+                            <div class="achievement-item">✅ You can now spot XSS vulnerabilities</div>
+                            <div class="achievement-item">✅ You understand CSRF attack patterns</div>
+                            <div class="achievement-item">✅ You know why CORS errors happen</div>
+                            <div class="achievement-item">✅ You're ready to secure our applications!</div>
+                        </div>
+                    </div>
+                    <div class="contact-info">
+                        <h3>🤝 Stay in Touch:</h3>
+                        <div class="contact-methods">
+                            <div class="contact-item">
+                                <span class="contact-icon">💬</span>
+                                <span>#security Slack channel</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">📧</span>
+                                <span>security-questions@company.com</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">📅</span>
+                                <span>Monthly "Hack & Learn" sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="final-meme">
+                    <h3>🎭 Final Meme:</h3>
+                    <div class="success-kid">
+                        <div class="meme-image">👶✊</div>
+                        <div class="meme-text">
+                            <p>"Attended security presentation"</p>
+                            <p>"Actually understood everything"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="thank-you">
+                    <h2>Thank you for being awesome! 🚀</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>

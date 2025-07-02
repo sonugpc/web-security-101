@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Security: XSS, CSRF, CORS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .nav-container {
+            position: fixed; top: 20px; width: 100%; display: flex;
+            justify-content: space-between; align-items: center; padding: 0 40px; z-index: 1000;
+        }
+        
+        .slide-counter {
+            background: rgba(0, 255, 0, 0.2); padding: 10px 20px; border-radius: 25px;
+            border: 2px solid #00ff00; font-weight: bold; font-size: 1rem;
+        }
+        
+        .nav-buttons button {
+            background: linear-gradient(45deg, #ff6b35, #f7931e); border: none; color: white;
+            padding: 12px 24px; margin: 0 5px; border-radius: 25px; cursor: pointer;
+            font-weight: bold; transition: all 0.3s ease; font-size: 1rem;
+        }
+        
+        .nav-buttons button:hover { transform: translateY(-2px); }
+        .nav-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .slide {
+            display: none; height: 100vh; padding: 70px 40px 20px;
+            position: absolute; width: 100%; top: 0; left: 0;
+            overflow-y: auto; /* Made scrollable */
+        }
+        
+        .slide.active { display: block; }
+        
+        .slide-content { 
+            max-width: 1400px; margin: 0 auto; width: 100%;
+            min-height: calc(100vh - 90px); /* Ensure content fits */
+            display: flex; flex-direction: column; justify-content: flex-start;
+        }
+        
+        /* Typography */
+        h1 { 
+            font-size: 2.5rem; text-align: center; margin-bottom: 30px; 
+            line-height: 1.2;
+        }
+        h2 { 
+            font-size: 1.8rem; margin-bottom: 20px; color: #4ecdc4; 
+            line-height: 1.3;
+        }
+        h3 { 
+            font-size: 1.3rem; margin-bottom: 15px; color: #ff6b35; 
+            line-height: 1.3;
+        }
+        
+        /* Title Slide Styles */
+        .title-slide {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 90px);
+        }
+        
+        .glitch-text {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff00, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glitch 2s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-2px); }
+            20% { transform: translateX(2px); }
+            30% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            50% { transform: translateX(0); }
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ff6b35;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .presenter-info {
+            margin-top: 40px;
+        }
+        
+        .presenter-info p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .disclaimer {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 20px;
+        }
+        
+        /* Section title colors */
+        .xss-title { color: #ff6b35; }
+        .csrf-title { color: #4ecdc4; }
+        .cors-title { color: #f7931e; }
+        
+        /* Layout Grids */
+        .two-column { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; 
+        }
+        .three-column { 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 20px 0; 
+        }
+        
+        /* Stats Layout (Like Version 1) */
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-box.big-number {
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(247, 147, 30, 0.2));
+            border: 2px solid #ff6b35;
+        }
+        
+        .stat-box .number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+        
+        .big-number .number {
+            font-size: 5rem;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-box .label {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.4;
+        }
+        
+        .stat-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* Cards and Boxes */
+        .demo-box {
+            background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px;
+            border: 2px solid #ff6b35; margin: 15px 0;
+        }
+        
+        .code-block {
+            background: #1e1e1e; padding: 20px; border-radius: 15px;
+            font-family: 'Fira Code', monospace; margin: 15px 0;
+            border: 2px solid #4ecdc4; font-size: 0.9rem; line-height: 1.4;
+        }
+        
+        .danger-code { border-color: #ff4444; }
+        .safe-code { border-color: #4ecdc4; }
+        
+        .vulnerability-card {
+            background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px;
+            text-align: center; transition: transform 0.3s ease;
+            height: fit-content;
+        }
+        
+        .vulnerability-card:hover { transform: translateY(-5px); }
+        
+        .impact-high { border-left: 5px solid #ff4444; }
+        .impact-medium { border-left: 5px solid #ff6b35; }
+        .impact-low { border-left: 5px solid #4ecdc4; }
+        
+        /* Demo Areas */
+        .demo-area {
+            background: white; color: #333; padding: 20px; border-radius: 15px; margin: 15px 0;
+        }
+        
+        .demo-area input, .demo-area textarea {
+            width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; 
+            border-radius: 5px; font-size: 0.9rem;
+        }
+        
+        .demo-button {
+            background: #ff6b35; color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; margin: 8px 5px; font-size: 0.9rem;
+        }
+        
+        .payload-btn {
+            background: #ff4444; color: white; border: none; padding: 8px 12px;
+            border-radius: 5px; cursor: pointer; margin: 3px; font-size: 0.8rem;
+        }
+        
+        /* Interactive Elements */
+        .audience-poll {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(76, 205, 196, 0.1);
+            border-radius: 20px;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .rating-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .rating-buttons button {
+            background: none;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 1.5rem;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .rating-buttons button:hover {
+            background: #00ff00;
+            color: #1a1a2e;
+            transform: scale(1.1);
+        }
+        
+        .poll-result {
+            font-size: 1.1rem;
+            color: #4ecdc4;
+            margin-top: 15px;
+        }
+        
+        /* Meme and Fun Elements */
+        .meme-section {
+            text-align: center; margin: 20px 0; padding: 20px;
+            background: rgba(255, 255, 255, 0.1); border-radius: 20px;
+        }
+        
+        .emoji-large { font-size: 3rem; margin: 15px 0; }
+        
+        /* Checklists */
+        .checklist {
+            background: rgba(0, 255, 0, 0.1); padding: 20px; border-radius: 15px;
+            border: 2px solid #00ff00; margin: 15px 0;
+        }
+        
+        .checklist ul { list-style: none; font-size: 1rem; }
+        .checklist li { 
+            margin: 8px 0; padding: 8px; background: rgba(255, 255, 255, 0.1); 
+            border-radius: 5px; 
+        }
+        .checklist li:before { content: "✅ "; color: #4ecdc4; font-weight: bold; }
+        
+        /* Plot Twist Box */
+        .plot-twist {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(255, 107, 53, 0.2);
+            border-radius: 20px;
+            border: 2px solid #ff6b35;
+        }
+        
+        .plot-twist h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ff6b35;
+        }
+        
+        .plot-twist p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .slide-content { max-width: 95%; }
+            .stats-container { grid-template-columns: 1fr; }
+            .two-column, .three-column { grid-template-columns: 1fr; gap: 20px; }
+        }
+        
+        @media (max-width: 768px) {
+            .slide { padding: 60px 15px 15px; }
+            .nav-container { padding: 0 15px; }
+            .slide-counter, .nav-buttons button { font-size: 0.9rem; padding: 8px 16px; }
+            .glitch-text { font-size: 2.5rem; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.2rem; }
+            .rating-buttons { gap: 5px; }
+            .rating-buttons button { font-size: 1.2rem; padding: 8px 12px; }
+        }
+        
+        /* Ensure content doesn't overflow */
+        .slide-content > * {
+            flex-shrink: 0;
+        }
+        
+        /* Scroll indicator */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .slide::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .slide::-webkit-scrollbar-thumb {
+            background: #ff6b35;
+            border-radius: 4px;
+        }
+        .stats-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.stats-summary p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.security-slide {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 25px 0;
+}
+
+.security-header {
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.security-header:hover {
+    transform: scale(1.02);
+}
+
+.big-security {
+    font-size: 4rem;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.click-hint {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.security-content {
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+}
+
+.hidden {
+    max-height: 0;
+    opacity: 0;
+}
+
+.security-definitions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.def-box {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.def-box h4 {
+    margin-top: 0;
+    color: #ffc107;
+}
+
+.security-bottom {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">11</span>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="previousSlide()" id="prev-btn">← Previous</button>
+            <button onclick="nextSlide()" id="next-btn">Next →</button>
+        </div>
+    </div>
+
+    <!-- Slides Container -->
+    <div class="presentation-container">
+
+        <!-- SLIDE 1: Title Slide -->
+        <div class="slide active" data-slide="0">
+            <div class="slide-content title-slide">
+                <h1 class="glitch-text">Breaking & Building</h1>
+                <h2 class="subtitle">The Web Security Survival Guide</h2>
+                <p style="font-size: 1.2rem; color: #ff6b35; font-style: italic;">
+                    Or:  How to Ruin a Hacker's Day
+                </p>
+                <div class="presenter-info">
+                    <p><strong>Presented by:</strong> Sonu Gupta</p>
+                    <p class="disclaimer">*No websites were harmed in making this presentation</p>
+                    <p class="disclaimer">**Except the demo ones 😈</p>
+                </div>
+            </div>
+            <p style="text-align: center;"><em>🤓 Full Disclosure: My security knowledge comes from Stack Overflow and painful experience. There's definitely more out there!</em></p>
+        </div>
+        <div class="presentation-container">
+
+        <!-- SLIDE 1: Title Slide -->
+        <div class="slide " data-slide="1">
+                 <div class="stat-box big-number slide-content">
+    <div class="security-header" onclick="toggleSecurity()">
+        <h1 class="big-security">🌐 WEB SECURITY</h1>
+        <p class="click-hint">👆 Click to explore what this means at REA</p>
+    </div>
+    <div id="security-content" class="security-content hidden">
+        <div class="security-definitions">
+            <div class="def-box">
+                <h4>🤔 What People Think:</h4>
+                <p>"It's just a property website, what could go wrong?"</p>
+            </div>
+            <div class="def-box">
+                <h4>😅 Reality Check:</h4>
+                <p>"We handle millions of searches, personal data, agent details, and property info daily!"</p>
+            </div>
+            <div class="def-box">
+                <h4>🎯 The Stakes:</h4>
+                <p>"One XSS could expose user searches, one SQLi could leak property data, one CSRF could manipulate listings!"</p>
+            </div>
+        </div>
+<p class="security-bottom"><strong>Life Update:</strong> From googling "Facebook password hack" to googling "How to prevent SQL injection" - we've switched sides! 🔍⚔️</p>
+    </div>
+</div>
+               </div>
+        
+
+        <!-- SLIDE 2: Opening Hook with Stats -->
+        <div class="slide" data-slide="2">
+       
+            <div class="slide-content">
+                <h1 style="color: #ff6b35;">🚨 The $2.3 Trillion Question</h1>
+                
+                <div class="stats-container">
+                    <div class="stat-box big-number">
+                        <div class="number">$2.3T</div>
+                        <div class="label">Web security failures cost globally in 2023</div>
+                        <div class="label" style="margin-top: 15px; color: #ff6b35;">
+                            That's more than most countries' GDP!
+                        </div>
+                    </div>
+                    <div class="stat-grid">
+                          <div class="stat-box">
+                            <div class="number">USD$20,870</div>
+                            <div class="label">REA Paid till now to researchers </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">83%</div>
+                            <div class="label">Organizations experienced web app attacks</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">68%</div>
+                            <div class="label">Had CSRF vulnerabilities</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">40%</div>
+                            <div class="label">Web apps vulnerable to XSS</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">71%</div>
+                            <div class="label">APIs have CORS misconfigurations</div>
+                        </div>
+                    </div>
+                 
+                </div>
+                
+                <div class="plot-twist">
+                    <h2>🎭 PLOT TWIST:</h2>
+                    <p>Today <strong>YOU</strong> become the hacker</p>
+                    <p style="font-size: 1rem; color: #ccc;">(Don't worry, it's legal... I think 🤔)</p>
+                </div>
+                
+                <div class="audience-poll">
+                    <h3>🎯 AUDIENCE POLL TIME!</h3>
+                    <p>Rate your web security skills:</p>
+                    <div class="rating-buttons">
+                        <button onclick="rateSkill(1)">1️⃣</button>
+                        <button onclick="rateSkill(2)">2️⃣</button>
+                        <button onclick="rateSkill(3)">3️⃣</button>
+                        <button onclick="rateSkill(4)">4️⃣</button>
+                        <button onclick="rateSkill(5)">5️⃣</button>
+                    </div>
+                    <p id="poll-result" class="poll-result"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: XSS Introduction & Demo -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h1 class="xss-title">🎪 XSS: Cross-Site Scripting</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>🎭 The Trojan Horse Attack</h2>
+                        <div class="vulnerability-card impact-high">
+                            <div class="emoji-large">🐴💀</div>
+                            <h3>What is XSS?</h3>
+                            <p>Malicious scripts injected into trusted websites</p>
+                            <p><strong>Impact:</strong> Account takeover, data theft</p>
+                            <p><strong>Found in:</strong> 40% of web applications</p>
+                            <p><strong>Average cost:</strong> $4.88M per breach</p>
+                        </div>
+                        
+                        <div class="meme-section">
+                            <div class="emoji-large">🔥🐶🔥</div>
+                            <p><strong>Me trusting user input</strong></p>
+                            <p><em>"This is fine"</em></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>🎮 Live Demo Time!</h2>
+                        <div class="demo-area">
+                            <h4>🎬 Movie Review Site</h4>
+                            <input type="text" id="movie-title" placeholder="Movie title...">
+                            <textarea id="review-text" placeholder="Your review..." rows="3"></textarea>
+                            <button class="demo-button" onclick="submitReview()">Submit Review</button>
+                            
+                            <div style="margin-top: 15px;">
+                                <h5>🔥 Try These Payloads:</h5>
+                                <button class="payload-btn" onclick="insertPayload('&lt;script&gt;alert(\'XSS Success!\')&lt;/script&gt;')">Basic Alert</button>
+                                <button class="payload-btn" onclick="insertPayload('&lt;img src=x onerror=alert(\'Image XSS!\')&gt;')">Image XSS</button>
+                                <button class="payload-btn" onclick="insertPayload('&lt;h1 style=color:red&gt;HACKED!&lt;/h1&gt;')">Style Injection</button>
+                            </div>
+                            
+                            <div id="reviews-display" style="margin-top: 15px; min-height: 80px; background: #f9f9f9; padding: 15px; border-radius: 5px;">
+                                <em>Reviews will appear here...</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: XSS Prevention -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h1 class="xss-title">🛡️ XSS Defense Strategies</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>❌ The Villain Code</h2>
+                        <div class="code-block danger-code">
+                            <code>
+// DON'T DO THIS!<br>
+element.innerHTML = userInput;<br><br>
+
+// Also dangerous:<br>
+document.write(userInput);<br>
+eval(userInput);<br>
+$('#div').html(userInput);
+                            </code>
+                        </div>
+                        
+                        <div class="vulnerability-card impact-high">
+                            <h3>⚠️ Why This Fails</h3>
+                            <p>• Directly executes user input</p>
+                            <p>• No sanitization</p>
+                            <p>• Trusts all data</p>
+                            <p>• Opens door to script injection</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>✅ The Hero Code</h2>
+                        <div class="code-block safe-code">
+                            <code>
+// SAFE APPROACH:<br>
+element.textContent = userInput;<br><br>
+
+// Framework protection:<br>
+React: {userInput} // Auto-escaped<br>
+Angular: {{userInput}} // Auto-escaped<br><br>
+
+// Server-side sanitization:<br>
+htmlspecialchars($userInput);<br>
+DOMPurify.sanitize(userInput);
+                            </code>
+                        </div>
+                        
+                        <div class="checklist">
+                            <h3>🦸‍♀️ Security Superpowers</h3>
+                            <ul>
+                                <li>Always sanitize user inputs</li>
+                                <li>Use textContent over innerHTML</li>
+                                <li>Implement Content Security Policy</li>
+                                <li>Use frameworks with auto-escaping</li>
+                                <li>Validate input server-side</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="meme-section">
+                    <h2>💡 Golden Rule</h2>
+                    <div class="emoji-large">👶✂️</div>
+                    <h3>"Trust users like you trust a toddler with scissors"</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: XSS Real-World Impact -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h1 class="xss-title">💥 XSS in the Wild</h1>
+                
+                <div class="three-column">
+                    <div class="vulnerability-card impact-high">
+                        <div class="emoji-large">📱</div>
+                        <h3>MySpace Samy Worm (2005)</h3>
+                        <p><strong>Impact:</strong> 1M+ profiles infected in 24hrs</p>
+                        <p><strong>Method:</strong> Self-replicating XSS</p>
+                        <p><strong>Message:</strong> "Samy is my hero"</p>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-high">
+                        <div class="emoji-large">🐦</div>
+                        <h3>Twitter XSS (2010)</h3>
+                        <p><strong>Impact:</strong> Millions affected</p>
+                        <p><strong>Method:</strong> Auto-retweeting tweets</p>
+                        <p><strong>Lesson:</strong> Even giants vulnerable</p>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-high">
+                        <div class="emoji-large">🏢</div>
+                        <h3>Corporate Breaches</h3>
+                        <p><strong>Average Cost:</strong> $4.88M</p>
+                        <p><strong>Data Stolen:</strong> Credentials, PII</p>
+                        <p><strong>Recovery:</strong> 6-12 months</p>
+                    </div>
+                </div>
+                
+                <div class="demo-box">
+                    <h2>🎯 What Attackers Can Do</h2>
+                    <div class="two-column">
+                        <div>
+                            <h3>💰 Financial Damage</h3>
+                            <ul>
+                                <li>Steal credit card information</li>
+                                <li>Transfer money from accounts</li>
+                                <li>Make unauthorized purchases</li>
+                                <li>Cryptocurrency theft</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>🔐 Account Takeover</h3>
+                            <ul>
+                                <li>Steal session cookies</li>
+                                <li>Change account passwords</li>
+                                <li>Access private messages</li>
+                                <li>Impersonate users</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>🚨 Action Items for Our Team</h3>
+                    <ul>
+                        <li>Audit all forms in our applications</li>
+                        <li>Add XSS testing to QA process</li>
+                        <!-- <li>Implement CSP headers this sprint</li> -->
+                        <li>Train developers on secure coding</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: CSRF Introduction & Demo -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h1 class="csrf-title">🎭 CSRF: Cross-Site Request Forgery</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>🏦 The Bank Heist Scenario</h2>
+                        <div class="vulnerability-card impact-high">
+                            <div class="emoji-large">🎩✨</div>
+                            <h3>The Identity Theft Magic Trick</h3>
+                            <p><strong>Step 1:</strong> You login to your bank</p>
+                            <p><strong>Step 2:</strong> You visit "cute puppies" site</p>
+                            <p><strong>Step 3:</strong> Hidden form steals your money</p>
+                            <p><strong>Result:</strong> $1000 transferred to attacker</p>
+                            <p><strong>Average cost:</strong> $1.4M per incident</p>
+                        </div>
+                        
+                        <div class="meme-section">
+                            <div class="emoji-large">🤔</div>
+                            <p><strong>"What could go wrong?"</strong></p>
+                            <p><em>Famous last words before CSRF attack</em></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>🎬 Live CSRF Demo</h2>
+                        <div class="demo-area">
+                            <h4>🏦 FakeBank.com</h4>
+                            <div style="background: rgba(76, 205, 196, 0.2); padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                ✅ Logged in as: user@email.com
+                            </div>
+                            <div style="background: rgba(0, 255, 0, 0.2); padding: 15px; border-radius: 5px; margin: 10px 0;">
+                                💰 Balance: $<span id="bank-balance">10,000</span>
+                            </div>
+                            
+                            <h5>Transfer Money:</h5>
+                            <input type="text" placeholder="Transfer to..." id="transfer-to">
+                            <input type="number" placeholder="Amount" id="transfer-amount">
+                            <button class="demo-button" onclick="normalTransfer()">Transfer Money</button>
+                        </div>
+                        
+                        <div class="demo-area" style="border: 2px solid #ff6b35;">
+                            <h4>🐶 AdorablePuppies.com</h4>
+                            <div style="text-align: center; font-size: 2.5rem; margin: 15px 0;">
+                                🐕 🐩 🐕‍🦺
+                            </div>
+                            <button class="demo-button" onclick="triggerCSRF()" style="width: 100%; background: linear-gradient(45deg, #ff6b35, #f7931e);">
+                                Click to see more puppies! 🐶
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: CSRF Prevention -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h1 class="csrf-title">🛡️ CSRF Defense Mechanisms</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>❌ Vulnerable Form</h2>
+                <div class="code-block danger-code">
+                            <code>
+&lt;form action="/transfer" method="POST"&gt;<br>
+&nbsp;&nbsp;&lt;input name="to" placeholder="To..."&gt;<br>
+&nbsp;&nbsp;&lt;input name="amount" placeholder="Amount"&gt;<br>
+&nbsp;&nbsp;&lt;button type="submit"&gt;Transfer&lt;/button&gt;<br>
+&lt;/form&gt;<br><br>
+
+// Anyone can submit this form!
+                            </code>
+                        </div>
+                        
+                        <div class="vulnerability-card impact-high">
+                            <h3>⚠️ Why This Fails</h3>
+                            <p>• No authentication check</p>
+                            <p>• Accepts any POST request</p>
+                            <p>• Trusts the browser</p>
+                            <p>• No origin validation</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>✅ Protected Form</h2>
+                        <div class="code-block safe-code">
+                            <code>
+&lt;form action="/transfer" method="POST"&gt;<br>
+&nbsp;&nbsp;&lt;input type="hidden" name="csrf_token" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value="abc123xyz789"&gt;<br>
+&nbsp;&nbsp;&lt;input name="to" placeholder="To..."&gt;<br>
+&nbsp;&nbsp;&lt;input name="amount" placeholder="Amount"&gt;<br>
+&nbsp;&nbsp;&lt;button type="submit"&gt;Transfer&lt;/button&gt;<br>
+&lt;/form&gt;<br><br>
+
+// Server validates token!
+                            </code>
+                        </div>
+                        
+                        <div class="checklist">
+                            <h3>🎫 CSRF Token Benefits</h3>
+                            <ul>
+                                <li>Unique per session/request</li>
+                                <li>Unpredictable by attackers</li>
+                                <li>Validated server-side</li>
+                                <li>Expires automatically</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="three-column">
+                    <div class="vulnerability-card impact-low">
+                        <div class="emoji-large">🎫</div>
+                        <h3>CSRF Tokens</h3>
+                        <p>Like VIP wristbands - no token, no entry!</p>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-low">
+                        <div class="emoji-large">🍪</div>
+                        <h3>SameSite Cookies</h3>
+                        <p>Prevent cross-site cookie sending</p>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-low">
+                        <div class="emoji-large">🔍</div>
+                        <h3>Origin Validation</h3>
+                        <p>Check request source headers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CSRF Real-World Impact -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h1 class="csrf-title">💸 CSRF Attack Consequences</h1>
+                
+                <div class="stats-container">
+                    <div class="stat-box big-number">
+                        <div class="number">$1.4M</div>
+                        <div class="label">Average cost per CSRF incident</div>
+                        <div class="label" style="margin-top: 15px; color: #4ecdc4;">
+                            Plus 3-6 months recovery time
+                        </div>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="number">68%</div>
+                            <div class="label">Organizations experienced CSRF attacks</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">45%</div>
+                            <div class="label">Had multiple CSRF incidents</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">23%</div>
+                            <div class="label">Took 6+ months to detect</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">$500K</div>
+                            <div class="label">Average legal costs</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-box">
+                    <h2>🎯 Common Attack Vectors</h2>
+                    <div class="two-column">
+                        <div>
+                            <h3>📧 Phishing Emails</h3>
+                            <p>"Check out this funny video!" → Hidden form submission</p>
+                            
+                            <h3>🌐 Malicious Websites</h3>
+                            <p>Legitimate-looking sites with hidden CSRF attacks</p>
+                        </div>
+                        <div>
+                            <h3>📱 Social Media</h3>
+                            <p>Shortened URLs hiding malicious redirects</p>
+                            
+                            <h3>💬 Forum Posts</h3>
+                            <p>Embedded images with malicious src attributes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="meme-section">
+                    <div class="emoji-large">🦆</div>
+                    <p><strong>If it looks like a duck, quacks like a duck...</strong></p>
+                    <p><em>It might still be a CSRF attack</em></p>
+                </div>
+                
+                <div class="checklist">
+                    <h3>🚨 Immediate Action Items</h3>
+                    <ul>
+                        <li>Add CSRF tokens to all state-changing forms</li>
+                        <li>Implement SameSite cookie attributes</li>
+                        <li>Add CSRF protection to authentication middleware</li>
+                        <li>Test all admin panels for CSRF vulnerabilities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CORS Introduction & Demo -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h1 class="cors-title">🌐 CORS: Cross-Origin Resource Sharing</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>🏰 The API Castle Guards</h2>
+                        <div class="vulnerability-card impact-medium">
+                            <div class="emoji-large">🛡️</div>
+                            <h3>Same-Origin Policy</h3>
+                            <p><strong>Browser:</strong> "Locals only!"</p>
+                            <p><strong>CORS:</strong> "Here's the guest list"</p>
+                            <p><strong>Misconfigured:</strong> "Guards went home early"</p>
+                            <p><strong>71%</strong> of APIs have CORS issues</p>
+                        </div>
+                        
+                        <div class="demo-box">
+                            <h3>🔍 Origin Components</h3>
+                            <p><strong>https://api.example.com:443/data</strong></p>
+                            <ul style="text-align: left; margin-left: 20px;">
+                                <li>Protocol: https://</li>
+                                <li>Domain: api.example.com</li>
+                                <li>Port: 443</li>
+                            </ul>
+                            <p><em>All must match for same-origin!</em></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>🎮 Live Browser Demo</h2>
+                        <div class="demo-area">
+                            <h4>👩‍💻 Open Your Browser Console!</h4>
+                            <p><strong>Instructions:</strong> Press F12 → Console Tab</p>
+                            
+                            <h5>✅ Successful Request:</h5>
+                            <div class="code-block safe-code">
+                                <code>
+fetch('https://api.github.com/users/octocat')<br>
+&nbsp;&nbsp;.then(r => r.json())<br>
+&nbsp;&nbsp;.then(console.log); // Works!
+                                </code>
+                            </div>
+                            
+                            <h5>❌ Blocked Request:</h5>
+                            <div class="code-block danger-code">
+                                <code>
+fetch('https://facebook.com')<br>
+&nbsp;&nbsp;.catch(console.error); // CORS Error!
+                                </code>
+                            </div>
+                            
+                            <button class="demo-button" onclick="testCORS()">🧪 Test CORS Requests</button>
+                            
+                            <div id="cors-results" style="margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 5px; color: #333; min-height: 60px;">
+                                <em>Results will appear here...</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CORS Configuration -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h1 class="cors-title">⚙️ CORS Configuration Guide</h1>
+                
+                <div class="two-column">
+                    <div>
+                        <h2>❌ Dangerous Configuration</h2>
+                        <div class="code-block danger-code">
+                            <code>
+// DON'T DO THIS IN PRODUCTION!<br>
+app.use(cors({<br>
+&nbsp;&nbsp;origin: '*', // Any website!<br>
+&nbsp;&nbsp;credentials: true // With cookies!<br>
+}));<br><br>
+
+// Server Response Headers:<br>
+Access-Control-Allow-Origin: *<br>
+Access-Control-Allow-Credentials: true
+                            </code>
+                        </div>
+                        
+                        <div class="vulnerability-card impact-high">
+                            <h3>⚠️ Why This is Dangerous</h3>
+                            <p>• ANY website can access your API</p>
+                            <p>• Credentials (cookies) are sent</p>
+                            <p>• Perfect for data theft</p>
+                            <p>• No origin validation</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2>✅ Secure Configuration</h2>
+                        <div class="code-block safe-code">
+                            <code>
+// SECURE APPROACH:<br>
+app.use(cors({<br>
+&nbsp;&nbsp;origin: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'https://ourapp.com',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'https://our-mobile-app.com'<br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;credentials: true,<br>
+&nbsp;&nbsp;optionsSuccessStatus: 200<br>
+}));<br><br>
+
+// Environment-specific origins<br>
+const origins = process.env.CORS_ORIGINS.split(',');
+                            </code>
+                        </div>
+                        
+                        <div class="checklist">
+                            <h3>🔧 CORS Best Practices</h3>
+                            <ul>
+                                <li>Specify exact origins, never use '*'</li>
+                                <li>Validate origins server-side</li>
+                                <li>Use environment-specific configs</li>
+                                <li>Monitor CORS policy violations</li>
+                                <li>Regular security audits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="three-column">
+                    <div class="vulnerability-card impact-low">
+                        <div class="emoji-large">🎯</div>
+                        <h3>Specific Origins</h3>
+                        <p>Only allow trusted domains</p>
+                        <code>origin: 'https://myapp.com'</code>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-medium">
+                        <div class="emoji-large">🍪</div>
+                        <h3>Credentials Control</h3>
+                        <p>Careful with cookies & auth headers</p>
+                        <code>credentials: true</code>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-low">
+                        <div class="emoji-large">📋</div>
+                        <h3>Method Restrictions</h3>
+                        <p>Limit allowed HTTP methods</p>
+                        <code>methods: ['GET', 'POST']</code>
+                    </div>
+                </div>
+                
+                <div class="meme-section">
+                    <div class="emoji-large">🧙‍♂️</div>
+                    <h3>"You shall not pass!"</h3>
+                    <p><em>- CORS Policy to random websites</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Summary & Action Plan -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h1>🎯 Security Action Plan</h1>
+                
+                <div class="three-column">
+                    <div class="vulnerability-card impact-high">
+                        <div class="emoji-large">🎪</div>
+                        <h3>XSS Defense</h3>
+                        <div class="checklist">
+                            <ul>
+                                <li>Sanitize ALL user inputs</li>
+                                <li>Use textContent over innerHTML</li>
+                                <li>Implement CSP headers</li>
+                                <li>Use auto-escaping frameworks</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-high">
+                        <div class="emoji-large">🎭</div>
+                        <h3>CSRF Protection</h3>
+                        <div class="checklist">
+                            <ul>
+                                <li>Add CSRF tokens to forms</li>
+                                <li>Use SameSite cookies</li>
+                                <li>Validate request origins</li>
+                                <li>Double-submit cookies</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="vulnerability-card impact-medium">
+                        <div class="emoji-large">🌐</div>
+                        <h3>CORS Configuration</h3>
+                        <div class="checklist">
+                            <ul>
+                                <li>Specify exact origins</li>
+                                <li>Avoid wildcard (*) origins</li>
+                                <li>Monitor CORS policies</li>
+                                <li>Environment-specific configs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- <div class="demo-box">
+                    <h2>📅 Implementation Timeline</h2>
+                    <div class="two-column">
+                        <div>
+                            <h3>🚨 This Week (Critical)</h3>
+                            <ul>
+                                <li>Audit existing forms for XSS</li>
+                                <li>Add CSRF tokens to admin panels</li>
+                                <li>Review current CORS configurations</li>
+                                <li>Implement CSP headers</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>📈 Next Sprint (Important)</h3>
+                            <ul>
+                                <li>Security testing in CI/CD pipeline</li>
+                                <li>Developer security training</li>
+                                <li>Penetration testing schedule</li>
+                                <li>Security monitoring setup</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div> -->
+                
+                <div class="stats-container">
+                    <div class="stat-box big-number">
+                        <div class="number">🎉</div>
+                        <div class="label">Congratulations! You're now security-aware developers!</div>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="number">✅</div>
+                            <div class="label">Can identify XSS vulnerabilities</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">✅</div>
+                            <div class="label">Understand CSRF attack patterns</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">✅</div>
+                            <div class="label">Know how to configure CORS</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="number">✅</div>
+                            <div class="label">Ready to secure applications</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="meme-section">
+                    <div class="emoji-large">👶✊</div>
+                    <h2>🎉 Success Kid Moment!</h2>
+                    <p><strong>"Attended security presentation"</strong></p>
+                    <p><strong>"Actually understood everything"</strong></p>
+                    <br>
+                    <h3>🤝 Stay Connected:</h3>
+                    <p>💬 #security-guild Slack channel</p>
+                    <!-- <p>📅 Monthly "Hack & Learn" sessions</p> -->
+                    <p><strong>Thank you for being awesome! 🚀</strong></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Global variables
+        let currentSlide = 0;
+        const totalSlides = 11;
+        let pollResults = {
+            skillRating: {}
+        };
+
+function toggleSecurity() {
+    const content = document.getElementById('security-content');
+    content.classList.toggle('hidden');
+}
+        // Navigation functions
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                document.querySelector(`[data-slide="${currentSlide}"]`).classList.remove('active');
+                currentSlide++;
+                document.querySelector(`[data-slide="${currentSlide}"]`).classList.add('active');
+                updateSlideCounter();
+                updateNavigationButtons();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 1) {
+                document.querySelector(`[data-slide="${currentSlide}"]`).classList.remove('active');
+                currentSlide--;
+                document.querySelector(`[data-slide="${currentSlide}"]`).classList.add('active');
+                updateSlideCounter();
+                updateNavigationButtons();
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('current-slide').textContent = currentSlide;
+            document.getElementById('total-slides').textContent = totalSlides;
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            } else if (e.key === 'Escape') {
+                toggleFullscreen();
+            }
+        });
+
+        // Interactive Functions
+        function rateSkill(rating) {
+            if (!pollResults.skillRating[rating]) {
+                pollResults.skillRating[rating] = 0;
+            }
+            pollResults.skillRating[rating]++;
+            
+            const resultElement = document.getElementById('poll-result');
+            const total = Object.values(pollResults.skillRating).reduce((a, b) => a + b, 0);
+            const average = Object.entries(pollResults.skillRating)
+                .reduce((sum, [rating, count]) => sum + (rating * count), 0) / total;
+            
+            resultElement.innerHTML = `
+                <p>📊 ${total} votes • Average: ${average.toFixed(1)}/5</p>
+                <p>Thanks for your honesty! 😄</p>
+            `;
+        }
+
+        // XSS Demo Functions
+        function submitReview() {
+            const movieTitle = document.getElementById('movie-title').value;
+            const reviewText = document.getElementById('review-text').value;
+            const reviewsDisplay = document.getElementById('reviews-display');
+            
+            if (!movieTitle && !reviewText) return;
+            
+            // INTENTIONALLY VULNERABLE - FOR DEMO ONLY!
+            const reviewHTML = `
+                <div style="border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 5px;">
+                    <h5 style="margin: 0 0 8px 0; color: #333;">Movie: ${movieTitle}</h5>
+                    <p style="margin: 0 0 8px 0; color: #666;">${reviewText}</p>
+                    <small style="color: #999;">Posted just now</small>
+                </div>
+            `;
+            
+            reviewsDisplay.innerHTML += reviewHTML;
+            
+            // Clear form
+            document.getElementById('movie-title').value = '';
+            document.getElementById('review-text').value = '';
+            
+            // Show success message for XSS
+            if (reviewText.includes('<script>') || reviewText.includes('onerror=')) {
+                setTimeout(() => {
+                    alert('🎉 XSS Attack Successful!\n\nYou just injected malicious code into the page!\n\nIn a real app, this could steal data or take over accounts.');
+                }, 500);
+            }
+        }
+
+        function insertPayload(payload) {
+            const decodedPayload = payload.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            document.getElementById('review-text').value = decodedPayload;
+        }
+
+        // CSRF Demo Functions
+        function normalTransfer() {
+            const to = document.getElementById('transfer-to').value;
+            const amount = document.getElementById('transfer-amount').value;
+            
+            if (!to || !amount) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            alert(`✅ Normal transfer of $${amount} to ${to} completed!`);
+            document.getElementById('transfer-to').value = '';
+            document.getElementById('transfer-amount').value = '';
+        }
+
+        function triggerCSRF() {
+            alert('🐶 Loading adorable puppies...\n\n*Meanwhile, hidden form submits in background*');
+            
+            setTimeout(() => {
+                // Simulate CSRF attack
+                const balanceElement = document.getElementById('bank-balance');
+                balanceElement.textContent = '9,000';
+                balanceElement.style.color = '#ff4444';
+                
+                setTimeout(() => {
+                    alert('🚨 CSRF ATTACK SUCCESSFUL!\n\n💸 $1,000 transferred to attacker@evil.com\n\nYou never saw it coming!\n\nThis is why CSRF tokens are crucial!');
+                }, 1000);
+            }, 2000);
+        }
+
+        // CORS Demo Functions
+        function testCORS() {
+            const resultsDiv = document.getElementById('cors-results');
+            resultsDiv.innerHTML = '<p>🧪 Testing CORS requests...</p>';
+            
+            // Test successful request
+            fetch('https://api.github.com/users/octocat')
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML += `
+                        <div style="background: rgba(76, 205, 196, 0.2); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            ✅ <strong>GitHub API Success!</strong><br>
+                            User: ${data.login}, Public Repos: ${data.public_repos}
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML += `
+                        <div style="background: rgba(255, 68, 68, 0.2); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            ❌ <strong>GitHub API Error:</strong><br>
+                            ${error.message}
+                        </div>
+                    `;
+                });
+            
+            // Test blocked request
+            setTimeout(() => {
+                fetch('https://facebook.com', { mode: 'cors' })
+                    .then(response => {
+                        resultsDiv.innerHTML += `
+                            <div style="background: rgba(76, 205, 196, 0.2); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                ✅ <strong>Facebook Request Succeeded</strong> (Unexpected!)
+                            </div>
+                        `;
+                    })
+                    .catch(error => {
+                        resultsDiv.innerHTML += `
+                            <div style="background: rgba(255, 68, 68, 0.2); padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                ❌ <strong>Facebook CORS Blocked:</strong><br>
+                                ${error.message}
+                            </div>
+                        `;
+                    });
+            }, 1000);
+            
+            setTimeout(() => {
+                resultsDiv.innerHTML += `
+                    <div style="background: rgba(247, 147, 30, 0.2); padding: 15px; margin: 10px 0; border-radius: 5px; text-align: center;">
+                        <strong>🎯 CORS Demo Complete!</strong><br>
+                        <em>GitHub allows cross-origin requests, Facebook doesn't</em>
+                    </div>
+                `;
+            }, 2500);
+        }
+
+        // Utility functions
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen not supported');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlideCounter();
+            updateNavigationButtons();
+        });
+    </script>
+</body>
+</html>
