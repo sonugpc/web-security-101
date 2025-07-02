@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Sonu Gupta">
+    <meta name="description" content="An interactive web security playground created by Sonu Gupta to help learn about common vulnerabilities like XSS, CSRF, and CORS">
+    <title>Web Security Playground | Sonu Gupta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="glitch" data-text="Web Security Playground"><i class="fas fa-shield-alt"></i> Web Security Playground</h1>
+            <p>Learn about common web security vulnerabilities through interactive examples</p>
+            <p class="author-subtitle">Created by <span class="text-primary glow-text">Sonu Gupta</span></p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <!-- <h2>Welcome to the Web Security Playground</h2>
+            <p>This interactive platform helps you understand common web security vulnerabilities through hands-on examples. Explore different attack vectors, see how they work, and learn how to protect against them.</p>
+             -->
+            <!-- <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <h3>Educational Purpose Only</h3>
+                    <p>This site is created for educational purposes only. The techniques demonstrated here should never be used on real websites without explicit permission. Always practice ethical hacking.</p>
+                </div>
+            </div> -->
+        </section>
+
+        <section class="vulnerabilities">
+            <h2>Common Web Vulnerabilities</h2>
+            <div class="vulnerability-grid">
+                <div class="vulnerability-card">
+                    <div class="card-header xss">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3>Cross-Site Scripting (XSS)</h3>
+                        <p>Learn how attackers can inject malicious scripts into web pages viewed by other users, and how to prevent these attacks.</p>
+                        <div class="vulnerability-tags">
+                            <span class="tag">Client-side</span>
+                            <span class="tag">Injection</span>
+                            <span class="tag">High Risk</span>
+                        </div>
+                        <a href="xss/index.html" class="btn">Explore XSS <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <div class="vulnerability-card">
+                    <div class="card-header csrf">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3>Cross-Site Request Forgery (CSRF)</h3>
+                        <p>Discover how attackers can trick users into performing unwanted actions on websites where they're authenticated.</p>
+                        <div class="vulnerability-tags">
+                            <span class="tag">Client-side</span>
+                            <span class="tag">Authentication</span>
+                            <span class="tag">Medium Risk</span>
+                        </div>
+                        <a href="csrf/index.html" class="btn">Explore CSRF <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <div class="vulnerability-card">
+                    <div class="card-header cors">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3>Cross-Origin Resource Sharing (CORS)</h3>
+                        <p>Understand how misconfigured CORS policies can lead to unauthorized access to sensitive data across different domains.</p>
+                        <div class="vulnerability-tags">
+                            <span class="tag">Server-side</span>
+                            <span class="tag">Configuration</span>
+                            <span class="tag">Medium Risk</span>
+                        </div>
+                        <a href="cors/index.html" class="btn">Explore CORS <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- <section class="features">
+            <h2>Interactive Features</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Live Demonstrations</h3>
+                        <p>Experience vulnerabilities in action with interactive examples that show both the attack and defense mechanisms.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Vulnerable vs. Fixed Code</h3>
+                        <p>Compare vulnerable code with secure implementations to understand best practices for web security.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Real-time Monitoring</h3>
+                        <p>Watch attacks unfold in real-time with detailed monitoring of requests, responses, and DOM changes.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Educational Resources</h3>
+                        <p>Access comprehensive explanations, best practices, and links to additional learning materials.</p>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+        <!-- <section class="about" id="about">
+            <h2>About This Project</h2>
+            <p>The Web Security Playground is designed to help developers, security professionals, and students learn about web security vulnerabilities in an interactive and engaging way. By providing hands-on demonstrations of both vulnerable and secure code, this platform aims to improve understanding of common security issues and how to address them.</p>
+            <p>All demonstrations run entirely in your browser, with no server-side processing required. This makes it safe to experiment with the vulnerabilities without any risk to real systems.</p>
+            <div class="author-info">
+                <h3>About the Author</h3>
+                <p>This project was created by <span class="text-primary glow-text">Sonu Gupta</span>, a cybersecurity enthusiast and web developer passionate about educating others on secure coding practices. Feel free to explore the different sections to learn more about common web vulnerabilities.</p>
+            </div>
+        </section> -->
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Created for educational purposes only. Do not use these techniques on real websites without permission.</p>
+            <p><i class="fas fa-exclamation-triangle"></i> Remember: With great power comes great responsibility!</p>
+            <p class="copyright">© <span class="current-year">2025</span> <span class="text-primary">Sonu Gupta</span> | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

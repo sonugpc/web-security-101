@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Vulnerability Demo | Web Security Playground</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/csrf.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-shield-alt"></i> Web Security Playground</h1>
+            <p>Cross-Site Request Forgery (CSRF) Vulnerability Demo</p>
+        </div>
+    </header>
+
+    <nav class="container">
+        <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </nav>
+
+    <main class="container">
+        <section class="intro">
+            <h2><i class="fas fa-exchange-alt"></i> Cross-Site Request Forgery (CSRF)</h2>
+            <p>CSRF attacks occur when a malicious website tricks a user's browser into making an unwanted request to a website where the user is already authenticated. This can lead to unauthorized actions being performed on behalf of the authenticated user.</p>
+        </section>
+
+        <div class="demo-tabs">
+            <button class="tab-btn active" data-tab="vulnerable">Vulnerable Version</button>
+            <button class="tab-btn" data-tab="fixed">Fixed Version</button>
+            <button class="tab-btn" data-tab="learn">Learn More</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Vulnerable Version -->
+            <div class="tab-pane active" id="vulnerable">
+                <div class="demo-container">
+                    <div class="demo-description">
+                        <h3>Vulnerable Banking Application</h3>
+                        <p>This banking application is vulnerable to CSRF attacks because it doesn't validate the origin of requests.</p>
+                        <p>Scenario:</p>
+                        <ol>
+                            <li>You are logged in to your bank account (simulated)</li>
+                            <li>You visit a malicious website that contains a hidden form</li>
+                            <li>The form automatically submits, transferring money without your knowledge</li>
+                        </ol>
+                        <div class="malicious-site-demo">
+                            <h4>Malicious Website Simulation</h4>
+                            <p>Click the button below to simulate visiting a malicious website:</p>
+                            <button id="show-malicious-site" class="danger-button">Visit Malicious Site</button>
+                        </div>
+                    </div>
+
+                    <div class="demo-app vulnerable-app">
+                        <div class="app-header">
+                            <h3>MySecureBank</h3>
+                            <p class="app-subtitle">Welcome back, John Doe</p>
+                        </div>
+                        
+                        <div class="app-content">
+                            <div class="account-info">
+                                <div class="account-balance">
+                                    <span>Account Balance:</span>
+                                    <span id="vulnerable-balance">$1000.00</span>
+                                </div>
+                                <div class="account-number">
+                                    <span>Account Number:</span>
+                                    <span>****5678</span>
+                                </div>
+                            </div>
+                            
+                            <div class="transfer-section">
+                                <h4>Transfer Money</h4>
+                                <form id="vulnerable-transfer-form">
+                                    <div class="form-group">
+                                        <label for="vulnerable-recipient">Recipient Account:</label>
+                                        <input type="text" id="vulnerable-recipient" value="Jane Smith (****1234)" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vulnerable-amount">Amount ($):</label>
+                                        <input type="number" id="vulnerable-amount" min="1" max="1000" value="100">
+                                    </div>
+                                    <button type="submit">Transfer Money</button>
+                                </form>
+                            </div>
+                            
+                            <div class="transaction-history">
+                                <h4>Recent Transactions</h4>
+                                <div id="vulnerable-transactions">
+                                    <div class="transaction">
+                                        <span class="transaction-date">2025-07-01</span>
+                                        <span class="transaction-description">Grocery Store</span>
+                                        <span class="transaction-amount debit">-$45.30</span>
+                                    </div>
+                                    <div class="transaction">
+                                        <span class="transaction-date">2025-06-30</span>
+                                        <span class="transaction-description">Salary Deposit</span>
+                                        <span class="transaction-amount credit">+$2500.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="malicious-site" class="malicious-site">
+                    <div class="malicious-site-header">
+                        <h3>CuteCatPics.com <span class="site-url">https://malicious-site.com/</span></h3>
+                        <button id="close-malicious-site" class="close-btn">&times;</button>
+                    </div>
+                    <div class="malicious-site-content">
+                        <h2>Adorable Cat Pictures!</h2>
+                        <div class="cat-images">
+                            <img src="https://placekittens.com/300/200" alt="Cute cat">
+                            <img src="https://placekittens.com/301/200" alt="Cute cat">
+                        </div>
+                        <p>Enjoy these adorable cat pictures while we secretly submit a form to transfer money from your bank account!</p>
+                        
+                        <!-- Hidden malicious form that auto-submits -->
+                        <form id="csrf-attack-form" style="display: none;">
+                            <input type="hidden" name="recipient" value="Hacker (****9999)">
+                            <input type="hidden" name="amount" value="500">
+                            <button type="submit">Hidden Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="code-explanation">
+                    <h4>Vulnerable Code:</h4>
+                    <div class="code-snippet">
+                        <pre><code class="language-javascript">// Vulnerable server-side code (pseudocode)
+app.post('/transfer', function(req, res) {
+    // Get the currently authenticated user from the session
+    const user = req.session.user;
+    
+    // Get transfer details from request
+    const { recipient, amount } = req.body;
+    
+    // VULNERABLE: No CSRF token validation!
+    // The server blindly trusts that the request came from the legitimate website
+    
+    // Process the transfer
+    transferMoney(user.accountId, recipient, amount);
+    
+    // Return success response
+    res.json({ success: true });
+});</code></pre>
+                    </div>
+                    <div class="vulnerability-explanation">
+                        <p><i class="fas fa-exclamation-triangle"></i> <strong>Why is this vulnerable?</strong></p>
+                        <p>The server doesn't verify that the request originated from its own website. It only checks that the user is authenticated via their session cookie, which is automatically included in all requests to the domain. This allows attackers to create malicious websites that submit forms to the vulnerable site, and the browser will include the user's authentication cookies.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Version -->
+            <div class="tab-pane" id="fixed">
+                <div class="demo-container">
+                    <div class="demo-description">
+                        <h3>Protected Banking Application</h3>
+                        <p>This banking application is protected against CSRF attacks by using anti-CSRF tokens.</p>
+                        <p>Even if you visit a malicious website, it cannot forge a valid request because it doesn't have access to the CSRF token.</p>
+                        <div class="malicious-site-demo">
+                            <h4>Malicious Website Simulation</h4>
+                            <p>Click the button below to simulate visiting a malicious website:</p>
+                            <button id="show-malicious-site-fixed" class="danger-button">Visit Malicious Site</button>
+                        </div>
+                    </div>
+
+                    <div class="demo-app fixed-app">
+                        <div class="app-header">
+                            <h3>MySecureBank</h3>
+                            <p class="app-subtitle">Welcome back, John Doe</p>
+                        </div>
+                        
+                        <div class="app-content">
+                            <div class="account-info">
+                                <div class="account-balance">
+                                    <span>Account Balance:</span>
+                                    <span id="fixed-balance">$1000.00</span>
+                                </div>
+                                <div class="account-number">
+                                    <span>Account Number:</span>
+                                    <span>****5678</span>
+                                </div>
+                            </div>
+                            
+                            <div class="transfer-section">
+                                <h4>Transfer Money</h4>
+                                <form id="fixed-transfer-form">
+                                    <div class="form-group">
+                                        <label for="fixed-recipient">Recipient Account:</label>
+                                        <input type="text" id="fixed-recipient" value="Jane Smith (****1234)" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fixed-amount">Amount ($):</label>
+                                        <input type="number" id="fixed-amount" min="1" max="1000" value="100">
+                                    </div>
+                                    <!-- CSRF Token (hidden in real applications) -->
+                                    <div class="form-group csrf-token-display">
+                                        <label>CSRF Token:</label>
+                                        <input type="text" id="csrf-token" value="a1b2c3d4-e5f6-7890-abcd-ef1234567890" readonly>
+                                    </div>
+                                    <button type="submit">Transfer Money</button>
+                                </form>
+                            </div>
+                            
+                            <div class="transaction-history">
+                                <h4>Recent Transactions</h4>
+                                <div id="fixed-transactions">
+                                    <div class="transaction">
+                                        <span class="transaction-date">2025-07-01</span>
+                                        <span class="transaction-description">Grocery Store</span>
+                                        <span class="transaction-amount debit">-$45.30</span>
+                                    </div>
+                                    <div class="transaction">
+                                        <span class="transaction-date">2025-06-30</span>
+                                        <span class="transaction-description">Salary Deposit</span>
+                                        <span class="transaction-amount credit">+$2500.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="malicious-site-fixed" class="malicious-site">
+                    <div class="malicious-site-header">
+                        <h3>CuteCatPics.com <span class="site-url">https://malicious-site.com/</span></h3>
+                        <button id="close-malicious-site-fixed" class="close-btn">&times;</button>
+                    </div>
+                    <div class="malicious-site-content">
+                        <h2>Adorable Cat Pictures!</h2>
+                        <div class="cat-images">
+                            <img src="https://placekitten.com/300/200" alt="Cute cat">
+                            <img src="https://placekitten.com/301/200" alt="Cute cat">
+                        </div>
+                        <p>Enjoy these adorable cat pictures while we try to submit a form to transfer money from your bank account!</p>
+                        
+                        <!-- Hidden malicious form that auto-submits but will fail -->
+                        <form id="csrf-attack-form-fixed" style="display: none;">
+                            <input type="hidden" name="recipient" value="Hacker (****9999)">
+                            <input type="hidden" name="amount" value="500">
+                            <!-- No CSRF token! -->
+                            <button type="submit">Hidden Submit</button>
+                        </form>
+                        
+                        <div class="attack-result" id="attack-result-fixed">
+                            <i class="fas fa-times-circle"></i>
+                            <p>Attack failed! The request was rejected because it didn't include a valid CSRF token.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-explanation">
+                    <h4>Fixed Code:</h4>
+                    <div class="code-snippet">
+                        <pre><code class="language-javascript">// Fixed server-side code (pseudocode)
+app.post('/transfer', function(req, res) {
+    // Get the currently authenticated user from the session
+    const user = req.session.user;
+    
+    // Get transfer details and CSRF token from request
+    const { recipient, amount, csrfToken } = req.body;
+    
+    // FIXED: Validate CSRF token
+    if (!csrfToken || !validateCsrfToken(user.id, csrfToken)) {
+        return res.status(403).json({ 
+            error: 'Invalid or missing CSRF token' 
+        });
+    }
+    
+    // Process the transfer
+    transferMoney(user.accountId, recipient, amount);
+    
+    // Return success response
+    res.json({ success: true });
+});</code></pre>
+                    </div>
+                    <div class="vulnerability-explanation success">
+                        <p><i class="fas fa-check-circle"></i> <strong>Why is this secure?</strong></p>
+                        <p>The server now requires a valid CSRF token with each request. This token is generated by the server and embedded in the legitimate form. Since the malicious site cannot access this token (due to same-origin policy), it cannot create a valid request. The token is unique to each user session and typically has a limited lifetime.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learn More -->
+            <div class="tab-pane" id="learn">
+                <div class="learn-content">
+                    <h3>Understanding CSRF Vulnerabilities</h3>
+                    
+                    <div class="learn-section">
+                        <h4>What is Cross-Site Request Forgery (CSRF)?</h4>
+                        <p>Cross-Site Request Forgery (CSRF) is an attack that forces authenticated users to execute unwanted actions on a web application in which they're currently authenticated. With a little help of social engineering (like sending a link via email or chat), an attacker may trick the users of a web application into executing actions of the attacker's choosing.</p>
+                        <p>If the victim is a normal user, a successful CSRF attack can force the user to perform state-changing requests like transferring funds, changing their email address, etc. If the victim is an administrative account, CSRF can compromise the entire web application.</p>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>How CSRF Attacks Work</h4>
+                        <ol>
+                            <li><strong>User Authentication:</strong> The victim logs into a site, such as their bank, which sets a cookie for authentication.</li>
+                            <li><strong>Cookie Persistence:</strong> The cookie remains in the browser even when the user visits other sites.</li>
+                            <li><strong>Malicious Request:</strong> The victim visits a malicious site that contains code to submit a form to the bank.</li>
+                            <li><strong>Automatic Cookie Inclusion:</strong> When the form is submitted, the browser automatically includes the authentication cookie.</li>
+                            <li><strong>Action Execution:</strong> The bank's server sees a valid request with a valid authentication cookie and performs the action.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Impact of CSRF Attacks</h4>
+                        <p>CSRF attacks can lead to:</p>
+                        <ul>
+                            <li>Unauthorized fund transfers</li>
+                            <li>Changed account details (email, password)</li>
+                            <li>Data theft or modification</li>
+                            <li>Unauthorized purchases</li>
+                            <li>Account compromise</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Prevention Techniques</h4>
+                        <ol>
+                            <li><strong>CSRF Tokens:</strong> Include a unique, unpredictable token with each request that the server validates.</li>
+                            <li><strong>Same-Site Cookies:</strong> Set cookies with the SameSite attribute to restrict when they are sent with cross-site requests.</li>
+                            <li><strong>Custom Request Headers:</strong> For AJAX requests, use custom headers that simple forms cannot generate.</li>
+                            <li><strong>Double Submit Cookie:</strong> Include the CSRF token as both a cookie and a request parameter.</li>
+                            <li><strong>Referer Header Validation:</strong> Check that the request is coming from your own domain.</li>
+                            <li><strong>Require User Interaction:</strong> For sensitive operations, require additional user interaction like re-entering a password.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Real-World CSRF Examples</h4>
+                        <ul>
+                            <li>In 2008, a CSRF vulnerability in YouTube allowed attackers to perform actions on behalf of users, including adding videos to favorites and sending messages.</li>
+                            <li>In 2014, a CSRF vulnerability in the WordPress REST API allowed attackers to create posts on behalf of authenticated users.</li>
+                            <li>In 2016, a CSRF vulnerability in a popular router allowed attackers to change DNS settings, redirecting users to malicious websites.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Additional Resources</h4>
+                        <ul>
+                            <li><a href="https://owasp.org/www-community/attacks/csrf" target="_blank">OWASP CSRF Prevention Cheat Sheet</a></li>
+                            <li><a href="https://portswigger.net/web-security/csrf" target="_blank">PortSwigger Web Security Academy: CSRF</a></li>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy" target="_blank">MDN Web Docs: Same-origin policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="realtime-monitor">
+            <h3>Real-time CSRF Monitor</h3>
+            <div class="monitor-container">
+                <div class="monitor-header">
+                    <span class="monitor-title">Security Monitor</span>
+                    <div class="monitor-controls">
+                        <span class="monitor-btn minimize">_</span>
+                        <span class="monitor-btn maximize">□</span>
+                        <span class="monitor-btn close">×</span>
+                    </div>
+                </div>
+                <div class="monitor-content">
+                    <div class="monitor-section">
+                        <h4>Request Log</h4>
+                        <div id="request-monitor" class="monitor-output">
+                            <div class="log-entry">Monitoring for requests...</div>
+                        </div>
+                    </div>
+                    <div class="monitor-section">
+                        <h4>Security Status</h4>
+                        <div id="security-monitor" class="monitor-output">
+                            <div class="log-entry">Monitoring security status...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Created for educational purposes only. Do not use these techniques on real websites without permission.</p>
+            <p><i class="fas fa-exclamation-triangle"></i> Remember: With great power comes great responsibility!</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="js/csrf.js"></script>
+</body>
+</html>

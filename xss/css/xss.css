@@ -1,0 +1,745 @@
+/**
+ * XSS Playground - Stylesheet
+ * Specific styles for the XSS demonstration page
+ */
+
+/* XSS Demo Styles */
+.xss-demo {
+    margin-bottom: 3rem;
+}
+
+/* Demo Container */
+.demo-container {
+    background-color: var(--light-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--primary-color);
+    position: relative;
+    overflow: auto;
+}
+
+.demo-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent 65%, rgba(255, 255, 255, 0.05) 75%, transparent 85%);
+    background-size: 200% 200%;
+    animation: shine 3s infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Demo Tabs */
+.demo-tabs {
+    display: flex;
+    background-color: var(--dark-color);
+    border-bottom: 2px solid var(--primary-color);
+    position: relative;
+    z-index: 1;
+}
+
+.tab-btn {
+    padding: 1rem 1.5rem;
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: 'Hack', 'Courier New', monospace;
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn:hover::before {
+    width: 80%;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    text-shadow: var(--neon-green-glow);
+}
+
+.tab-btn.active::before {
+    width: 80%;
+    box-shadow: var(--neon-green-glow);
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    padding: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+/* Demo Description */
+.demo-description {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.demo-description h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    text-shadow: var(--neon-green-glow);
+    font-size: 1.5rem;
+}
+
+/* Demo Playground */
+.demo-playground {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .demo-playground {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Vulnerable and Secure Sections */
+.vulnerable-section,
+.secure-section {
+    position: relative;
+}
+
+.vulnerable-section::before,
+.secure-section::before {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.vulnerable-section h4 {
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vulnerable-section h4::before {
+    content: "⚠️";
+    font-size: 1.2rem;
+}
+
+.secure-section h4 {
+    color: var(--success-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.secure-section h4::before {
+    content: "✅";
+    font-size: 1.2rem;
+}
+
+/* Code Editor */
+.code-editor {
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-editor::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-editor::after {
+    content: "// Code";
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    font-family: 'Hack', 'Courier New', monospace;
+}
+
+.code-editor pre {
+    margin: 0;
+    padding-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.code-editor code {
+    font-family: 'Hack', 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+/* Demo Interface */
+.demo-interface {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Search Form */
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.search-form label {
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.search-form input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    background-color: var(--dark-color);
+    color: var(--text-color);
+    font-family: 'Hack', 'Courier New', monospace;
+}
+
+.search-form button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: var(--dark-color);
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-form button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: var(--neon-blue-glow);
+}
+
+/* Result Display */
+.result-display {
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.result-display .placeholder {
+    color: var(--text-light);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+/* Comment Form */
+.comment-form {
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    background-color: var(--dark-color);
+    color: var(--text-color);
+    font-family: 'Hack', 'Courier New', monospace;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.comment-form button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: var(--dark-color);
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.comment-form button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: var(--neon-blue-glow);
+}
+
+/* Comments Section */
+.comments-section {
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comments-section h4 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comments-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.comment {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.comment:last-child {
+    margin-bottom: 0;
+}
+
+.comment h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0;
+    border-bottom: none;
+    color: var(--primary-color);
+}
+
+.comment p {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* URL Form */
+.url-form {
+    margin-bottom: 1.5rem;
+}
+
+.url-input-group {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.url-prefix {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    border-radius: 4px 0 0 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: none;
+    color: var(--text-light);
+    font-family: 'Hack', 'Courier New', monospace;
+}
+
+.url-input-group input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    background-color: var(--dark-color);
+    color: var(--text-color);
+    font-family: 'Hack', 'Courier New', monospace;
+}
+
+.url-input-group button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: var(--dark-color);
+    border: none;
+    border-radius: 0 4px 4px 0;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.url-input-group button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: var(--neon-blue-glow);
+}
+
+/* Profile Display */
+.profile-display {
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-display h4 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 255, 140, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--neon-green-glow);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--text-color);
+}
+
+.profile-role {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+/* Prevention Section */
+.prevention {
+    margin-bottom: 3rem;
+}
+
+.prevention-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.prevention-card {
+    background-color: var(--light-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.prevention-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent 65%, rgba(255, 255, 255, 0.05) 75%, transparent 85%);
+    background-size: 200% 200%;
+    animation: shine 3s infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.prevention-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.prevention-icon {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 255, 140, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--neon-green-glow);
+    position: relative;
+    z-index: 1;
+}
+
+.prevention-card:nth-child(2) .prevention-icon {
+    background-color: rgba(0, 204, 255, 0.1);
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    box-shadow: var(--neon-blue-glow);
+}
+
+.prevention-card:nth-child(3) .prevention-icon {
+    background-color: rgba(255, 0, 255, 0.1);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: var(--neon-pink-glow);
+}
+
+.prevention-card:nth-child(4) .prevention-icon {
+    background-color: rgba(255, 204, 0, 0.1);
+    color: var(--warning-color);
+    border-color: var(--warning-color);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.7), 0 0 20px rgba(255, 204, 0, 0.5), 0 0 30px rgba(255, 204, 0, 0.3);
+}
+
+.prevention-card h3 {
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    position: relative;
+    z-index: 1;
+}
+
+.prevention-card p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Resources Section */
+.resources {
+    margin-bottom: 3rem;
+}
+
+.resources-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.resources-list li {
+    background-color: var(--light-color);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+}
+
+.resources-list li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.resources-list i {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.resources-list a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.resources-list a:hover {
+    color: var(--primary-color);
+    text-shadow: var(--neon-green-glow);
+}
+
+/* Back to Home Button */
+.back-to-home {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* Animations */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--primary-color) }
+}
+
+/* XSS Attack Animation */
+.xss-attack {
+    position: relative;
+}
+
+.xss-attack::after {
+    content: "Injecting...";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.2);
+    color: var(--danger-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Hack', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1.5rem;
+    animation: xss-attack-anim 1s forwards;
+    z-index: 10;
+}
+
+@keyframes xss-attack-anim {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Glitch Effect for Vulnerable Elements */
+.glitch-text {
+    position: relative;
+    color: var(--danger-color);
+    text-shadow: 0 0 5px var(--danger-color);
+    animation: glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+    20% {
+        transform: translate(-2px, 2px);
+    }
+    40% {
+        transform: translate(-2px, -2px);
+    }
+    60% {
+        transform: translate(2px, 2px);
+    }
+    80% {
+        transform: translate(2px, -2px);
+    }
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* Hacker Meme */
+.hacker-meme {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 150px;
+    height: 150px;
+    z-index: 100;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.hacker-meme img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.hacker-meme:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .demo-playground {
+        grid-template-columns: 1fr;
+    }
+    
+    .prevention-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resources-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-form {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-form input {
+        width: 100%;
+    }
+}

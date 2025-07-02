@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Vulnerability Demo | Web Security Playground</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/cors.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-shield-alt"></i> Web Security Playground</h1>
+            <p>Cross-Origin Resource Sharing (CORS) Vulnerability Demo</p>
+        </div>
+    </header>
+
+    <nav class="container">
+        <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </nav>
+
+    <main class="container">
+        <section class="intro">
+            <h2><i class="fas fa-globe"></i> Cross-Origin Resource Sharing (CORS)</h2>
+            <p>CORS is a security feature implemented by browsers that restricts web pages from making requests to a different domain than the one that served the original page. Misconfigured CORS policies can lead to unauthorized access to sensitive data.</p>
+        </section>
+
+        <div class="demo-tabs">
+            <button class="tab-btn active" data-tab="vulnerable">Vulnerable Version</button>
+            <button class="tab-btn" data-tab="fixed">Fixed Version</button>
+            <button class="tab-btn" data-tab="learn">Learn More</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Vulnerable Version -->
+            <div class="tab-pane active" id="vulnerable">
+                <div class="demo-container">
+                    <div class="demo-description">
+                        <h3>Vulnerable API Server</h3>
+                        <p>This API server is vulnerable because it has a misconfigured CORS policy that allows any origin to access sensitive data.</p>
+                        <p>In this simulation:</p>
+                        <ol>
+                            <li>We have an API server at <code>api.example.com</code> (simulated)</li>
+                            <li>The API contains sensitive user data</li>
+                            <li>The server allows any website to make cross-origin requests</li>
+                            <li>A malicious website can access this data without permission</li>
+                        </ol>
+                        <div class="cors-simulation">
+                            <h4>CORS Vulnerability Simulation</h4>
+                            <p>Click the button below to simulate a malicious website attempting to access sensitive data:</p>
+                            <button id="simulate-vulnerable-cors" class="danger-button">Run Vulnerable Simulation</button>
+                        </div>
+                    </div>
+
+                    <div class="demo-app vulnerable-app">
+                        <div class="app-header">
+                            <h3>API Server Configuration</h3>
+                            <p class="app-subtitle">api.example.com</p>
+                        </div>
+                        
+                        <div class="app-content">
+                            <div class="server-config">
+                                <h4>Server Configuration</h4>
+                                <div class="config-item">
+                                    <span class="config-name">CORS Policy:</span>
+                                    <span class="config-value vulnerable">Access-Control-Allow-Origin: *</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-name">Allowed Methods:</span>
+                                    <span class="config-value">GET, POST, PUT, DELETE</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-name">Allow Credentials:</span>
+                                    <span class="config-value vulnerable">true</span>
+                                </div>
+                            </div>
+                            
+                            <div class="api-endpoints">
+                                <h4>API Endpoints</h4>
+                                <div class="endpoint">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users</span>
+                                    <span class="endpoint-description">Get all users</span>
+                                </div>
+                                <div class="endpoint">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users/:id</span>
+                                    <span class="endpoint-description">Get user by ID</span>
+                                </div>
+                                <div class="endpoint sensitive">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users/me</span>
+                                    <span class="endpoint-description">Get current user data</span>
+                                </div>
+                            </div>
+                            
+                            <div class="sensitive-data">
+                                <h4>Sensitive User Data (Example)</h4>
+                                <pre class="data-preview">{
+  "id": "12345",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "role": "admin",
+  "apiKey": "sk_live_abcdef123456",
+  "paymentInfo": {
+    "cardType": "Visa",
+    "lastFour": "4242"
+  }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-result" id="vulnerable-simulation-result">
+                    <div class="simulation-header">
+                        <h3>Malicious Website <span class="site-url">https://evil-site.com</span></h3>
+                    </div>
+                    <div class="simulation-content">
+                        <div class="simulation-step">
+                            <div class="step-number">1</div>
+                            <div class="step-description">
+                                <h4>Malicious JavaScript Code</h4>
+                                <div class="code-snippet">
+                                    <pre><code class="language-javascript">// Malicious code on evil-site.com
+fetch('https://api.example.com/api/users/me', {
+  method: 'GET',
+  credentials: 'include' // Sends cookies
+})
+.then(response => response.json())
+.then(data => {
+  // Send stolen data to attacker's server
+  sendToAttacker(data);
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">2</div>
+                            <div class="step-description">
+                                <h4>Browser Sends Request</h4>
+                                <div class="browser-request">
+                                    <p><strong>Request Headers:</strong></p>
+                                    <pre>GET /api/users/me HTTP/1.1
+Host: api.example.com
+Origin: https://evil-site.com
+Cookie: session=abc123
+...</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">3</div>
+                            <div class="step-description">
+                                <h4>Server Response</h4>
+                                <div class="server-response vulnerable">
+                                    <p><strong>Response Headers:</strong></p>
+                                    <pre>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+Content-Type: application/json
+...</pre>
+                                    <p><strong>Response Body:</strong></p>
+                                    <pre>{
+  "id": "12345",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "role": "admin",
+  "apiKey": "sk_live_abcdef123456",
+  "paymentInfo": {
+    "cardType": "Visa",
+    "lastFour": "4242"
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">4</div>
+                            <div class="step-description">
+                                <h4>Data Theft Complete</h4>
+                                <div class="attack-result">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <div>
+                                        <p><strong>Attack Successful!</strong></p>
+                                        <p>The malicious website was able to access sensitive user data due to the misconfigured CORS policy.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-explanation">
+                    <h4>Vulnerable Code:</h4>
+                    <div class="code-snippet">
+                        <pre><code class="language-javascript">// Vulnerable server-side code (Node.js/Express example)
+app.use((req, res, next) => {
+    // VULNERABLE: Allow all origins
+    res.header('Access-Control-Allow-Origin', '*');
+    
+    // VULNERABLE: Allow credentials (cookies, authorization headers)
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Allow various HTTP methods
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    
+    // Allow various headers
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    next();
+});</code></pre>
+                    </div>
+                    <div class="vulnerability-explanation">
+                        <p><i class="fas fa-exclamation-triangle"></i> <strong>Why is this vulnerable?</strong></p>
+                        <p>Setting <code>Access-Control-Allow-Origin: *</code> allows any website to make cross-origin requests to your API. When combined with <code>Access-Control-Allow-Credentials: true</code>, this creates a serious security vulnerability because it allows third-party sites to make authenticated requests using the user's cookies or authentication headers.</p>
+                        <p>The specification forbids setting <code>Access-Control-Allow-Origin: *</code> if <code>Access-Control-Allow-Credentials: true</code> is used, but some servers might be misconfigured to send both.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Version -->
+            <div class="tab-pane" id="fixed">
+                <div class="demo-container">
+                    <div class="demo-description">
+                        <h3>Secure API Server</h3>
+                        <p>This API server is properly configured with a restrictive CORS policy that only allows specific trusted origins to access the data.</p>
+                        <p>In this simulation:</p>
+                        <ol>
+                            <li>We have an API server at <code>api.example.com</code> (simulated)</li>
+                            <li>The API contains sensitive user data</li>
+                            <li>The server only allows specific trusted origins</li>
+                            <li>A malicious website cannot access this data</li>
+                        </ol>
+                        <div class="cors-simulation">
+                            <h4>CORS Protection Simulation</h4>
+                            <p>Click the button below to simulate a malicious website attempting to access sensitive data:</p>
+                            <button id="simulate-fixed-cors" class="danger-button">Run Secure Simulation</button>
+                        </div>
+                    </div>
+
+                    <div class="demo-app fixed-app">
+                        <div class="app-header">
+                            <h3>API Server Configuration</h3>
+                            <p class="app-subtitle">api.example.com</p>
+                        </div>
+                        
+                        <div class="app-content">
+                            <div class="server-config">
+                                <h4>Server Configuration</h4>
+                                <div class="config-item">
+                                    <span class="config-name">CORS Policy:</span>
+                                    <span class="config-value secure">Access-Control-Allow-Origin: https://app.example.com</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-name">Allowed Methods:</span>
+                                    <span class="config-value">GET, POST, PUT, DELETE</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-name">Allow Credentials:</span>
+                                    <span class="config-value">true</span>
+                                </div>
+                            </div>
+                            
+                            <div class="api-endpoints">
+                                <h4>API Endpoints</h4>
+                                <div class="endpoint">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users</span>
+                                    <span class="endpoint-description">Get all users</span>
+                                </div>
+                                <div class="endpoint">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users/:id</span>
+                                    <span class="endpoint-description">Get user by ID</span>
+                                </div>
+                                <div class="endpoint sensitive">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">/api/users/me</span>
+                                    <span class="endpoint-description">Get current user data</span>
+                                </div>
+                            </div>
+                            
+                            <div class="sensitive-data">
+                                <h4>Sensitive User Data (Example)</h4>
+                                <pre class="data-preview">{
+  "id": "12345",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "role": "admin",
+  "apiKey": "sk_live_abcdef123456",
+  "paymentInfo": {
+    "cardType": "Visa",
+    "lastFour": "4242"
+  }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-result" id="fixed-simulation-result">
+                    <div class="simulation-header">
+                        <h3>Malicious Website <span class="site-url">https://evil-site.com</span></h3>
+                    </div>
+                    <div class="simulation-content">
+                        <div class="simulation-step">
+                            <div class="step-number">1</div>
+                            <div class="step-description">
+                                <h4>Malicious JavaScript Code</h4>
+                                <div class="code-snippet">
+                                    <pre><code class="language-javascript">// Malicious code on evil-site.com
+fetch('https://api.example.com/api/users/me', {
+  method: 'GET',
+  credentials: 'include' // Sends cookies
+})
+.then(response => response.json())
+.then(data => {
+  // Send stolen data to attacker's server
+  sendToAttacker(data);
+})
+.catch(error => {
+  console.error('Attack failed:', error);
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">2</div>
+                            <div class="step-description">
+                                <h4>Browser Sends Request</h4>
+                                <div class="browser-request">
+                                    <p><strong>Request Headers:</strong></p>
+                                    <pre>GET /api/users/me HTTP/1.1
+Host: api.example.com
+Origin: https://evil-site.com
+Cookie: session=abc123
+...</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">3</div>
+                            <div class="step-description">
+                                <h4>Server Response</h4>
+                                <div class="server-response secure">
+                                    <p><strong>Response Headers:</strong></p>
+                                    <pre>HTTP/1.1 403 Forbidden
+Access-Control-Allow-Origin: https://app.example.com
+Content-Type: application/json
+...</pre>
+                                    <p><strong>Response Body:</strong></p>
+                                    <pre>{
+  "error": "CORS error: Request from unauthorized origin"
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="simulation-step">
+                            <div class="step-number">4</div>
+                            <div class="step-description">
+                                <h4>Attack Blocked</h4>
+                                <div class="attack-result secure">
+                                    <i class="fas fa-check-circle"></i>
+                                    <div>
+                                        <p><strong>Attack Blocked!</strong></p>
+                                        <p>The browser blocked the response due to CORS policy. The malicious website cannot access the data because its origin is not in the allowed list.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-explanation">
+                    <h4>Fixed Code:</h4>
+                    <div class="code-snippet">
+                        <pre><code class="language-javascript">// Secure server-side code (Node.js/Express example)
+const allowedOrigins = ['https://app.example.com', 'https://admin.example.com'];
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    // FIXED: Only allow specific origins
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+        
+        // Allow credentials only for trusted origins
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
+    
+    // Allow various HTTP methods
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    
+    // Allow various headers
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    next();
+});</code></pre>
+                    </div>
+                    <div class="vulnerability-explanation success">
+                        <p><i class="fas fa-check-circle"></i> <strong>Why is this secure?</strong></p>
+                        <p>This implementation only allows specific trusted origins to access the API. The server checks if the requesting origin is in the allowed list before setting the <code>Access-Control-Allow-Origin</code> header. This prevents malicious websites from making cross-origin requests to the API.</p>
+                        <p>Additionally, credentials are only allowed for these trusted origins, which is compliant with the CORS specification.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learn More -->
+            <div class="tab-pane" id="learn">
+                <div class="learn-content">
+                    <h3>Understanding CORS Vulnerabilities</h3>
+                    
+                    <div class="learn-section">
+                        <h4>What is Cross-Origin Resource Sharing (CORS)?</h4>
+                        <p>Cross-Origin Resource Sharing (CORS) is a security mechanism that allows a web application running at one origin to access resources from a different origin. This is implemented through HTTP headers that tell browsers whether a specific web application can access selected resources from a server at a different origin.</p>
+                        <p>By default, web browsers enforce the Same-Origin Policy, which restricts how a document or script loaded from one origin can interact with resources from another origin. CORS provides a way to relax this restriction in a controlled manner.</p>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>How CORS Works</h4>
+                        <ol>
+                            <li><strong>Browser Behavior:</strong> When a website makes a cross-origin request, the browser automatically adds an <code>Origin</code> header to the request.</li>
+                            <li><strong>Server Response:</strong> The server checks the <code>Origin</code> header and decides whether to allow the request.</li>
+                            <li><strong>CORS Headers:</strong> If allowed, the server includes CORS headers in its response, such as <code>Access-Control-Allow-Origin</code>.</li>
+                            <li><strong>Browser Enforcement:</strong> The browser checks these headers and either allows or blocks access to the response based on the CORS policy.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Common CORS Misconfigurations</h4>
+                        <ul>
+                            <li><strong>Overly Permissive Origins:</strong> Setting <code>Access-Control-Allow-Origin: *</code> allows any website to access your resources.</li>
+                            <li><strong>Improper Validation:</strong> Reflecting the <code>Origin</code> header without validation (e.g., <code>Access-Control-Allow-Origin: [origin]</code>).</li>
+                            <li><strong>Null Origin Allowed:</strong> Accepting <code>null</code> as a valid origin, which can be spoofed.</li>
+                            <li><strong>Credentials with Wildcard:</strong> Allowing credentials with a wildcard origin (browsers will block this, but server might be misconfigured).</li>
+                            <li><strong>Insecure Subdomains:</strong> Allowing all subdomains without proper validation (e.g., <code>*.example.com</code>).</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Impact of CORS Vulnerabilities</h4>
+                        <p>CORS misconfigurations can lead to:</p>
+                        <ul>
+                            <li>Unauthorized access to sensitive data</li>
+                            <li>Cross-site request forgery with credentials</li>
+                            <li>Data theft from authenticated sessions</li>
+                            <li>API abuse and unauthorized actions</li>
+                            <li>Information leakage</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Best Practices for CORS Security</h4>
+                        <ol>
+                            <li><strong>Specific Origins:</strong> Only allow specific, trusted origins rather than using wildcards.</li>
+                            <li><strong>Minimal Permissions:</strong> Only expose the endpoints that need to be accessed cross-origin.</li>
+                            <li><strong>Careful with Credentials:</strong> Be extremely cautious when allowing credentials in cross-origin requests.</li>
+                            <li><strong>Validate Origins:</strong> Properly validate origins against a whitelist before reflecting them.</li>
+                            <li><strong>Use Appropriate Methods:</strong> Only allow necessary HTTP methods.</li>
+                            <li><strong>Limit Exposed Headers:</strong> Only expose headers that are necessary for cross-origin requests.</li>
+                            <li><strong>Consider Additional Protections:</strong> Use CSRF tokens, SameSite cookies, and other security measures.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Real-World CORS Examples</h4>
+                        <ul>
+                            <li>In 2018, a CORS misconfiguration in a major financial platform allowed attackers to access users' financial data from malicious websites.</li>
+                            <li>In 2019, a popular cloud service provider had a CORS vulnerability that allowed attackers to access private user data through specially crafted websites.</li>
+                            <li>In 2020, a healthcare provider's API had a CORS misconfiguration that potentially exposed patient records to unauthorized websites.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="learn-section">
+                        <h4>Additional Resources</h4>
+                        <ul>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank">MDN Web Docs: Cross-Origin Resource Sharing (CORS)</a></li>
+                            <li><a href="https://portswigger.net/web-security/cors" target="_blank">PortSwigger Web Security Academy: CORS</a></li>
+                            <li><a href="https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing" target="_blank">OWASP: Testing for CORS</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="realtime-monitor">
+            <h3>Real-time CORS Monitor</h3>
+            <div class="monitor-container">
+                <div class="monitor-header">
+                    <span class="monitor-title">Security Monitor</span>
+                    <div class="monitor-controls">
+                        <span class="monitor-btn minimize">_</span>
+                        <span class="monitor-btn maximize">□</span>
+                        <span class="monitor-btn close">×</span>
+                    </div>
+                </div>
+                <div class="monitor-content">
+                    <div class="monitor-section">
+                        <h4>Request Log</h4>
+                        <div id="cors-request-monitor" class="monitor-output">
+                            <div class="log-entry">Monitoring for cross-origin requests...</div>
+                        </div>
+                    </div>
+                    <div class="monitor-section">
+                        <h4>CORS Headers</h4>
+                        <div id="cors-headers-monitor" class="monitor-output">
+                            <div class="log-entry">Monitoring CORS headers...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Created for educational purposes only. Do not use these techniques on real websites without permission.</p>
+            <p><i class="fas fa-exclamation-triangle"></i> Remember: With great power comes great responsibility!</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="js/cors.js"></script>
+</body>
+</html>

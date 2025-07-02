@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XSS Playground - Web Security Playground</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/xss.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-bug"></i> XSS Playground</h1>
+            <p>Learn about Cross-Site Scripting vulnerabilities and how to prevent them</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <h2>What is Cross-Site Scripting (XSS)?</h2>
+            <div class="terminal">
+                <span class="terminal-text">XSS allows attackers to inject malicious scripts into web pages viewed by other users.</span>
+            </div>
+            <p>XSS vulnerabilities occur when an application includes untrusted data in a web page without proper validation or escaping. This allows attackers to execute scripts in the victim's browser, which can steal cookies, session tokens, or other sensitive information.</p>
+        </section>
+
+        <section class="xss-demo">
+            <h2>Interactive XSS Demo</h2>
+            <div class="demo-container">
+                <div class="demo-tabs">
+                    <button class="tab-btn active" data-tab="reflected">Reflected XSS</button>
+                    <button class="tab-btn" data-tab="stored">Stored XSS</button>
+                    <button class="tab-btn" data-tab="dom">DOM-based XSS</button>
+                </div>
+                
+                <div class="tab-content active" id="reflected">
+                    <div class="demo-description">
+                        <h3>Reflected XSS</h3>
+                        <p>Reflected XSS occurs when user input is immediately returned by a web application in an error message, search result, or any other response that includes some or all of the input sent to the server as part of the request.</p>
+                    </div>
+                    
+                    <div class="demo-playground">
+                        <div class="vulnerable-section">
+                            <h4>Vulnerable Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Vulnerable code
+function displaySearchResults(query) {
+  const resultDiv = document.getElementById('searchResults');
+  
+  // Vulnerable: Directly inserting user input into the DOM
+  resultDiv.innerHTML = `
+    &lt;h3&gt;Search results for: ${query}&lt;/h3&gt;
+    &lt;p&gt;No results found.&lt;/p&gt;
+  `;
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="search-form">
+                                    <label for="vulnerable-search">Search:</label>
+                                    <input type="text" id="vulnerable-search" placeholder="Try: <script>alert('XSS')</script>">
+                                    <button id="vulnerable-search-btn">Search</button>
+                                </div>
+                                <div class="result-display" id="vulnerable-result">
+                                    <div class="placeholder">Search results will appear here</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="secure-section">
+                            <h4>Secure Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Secure code
+function displaySearchResultsSecure(query) {
+  const resultDiv = document.getElementById('searchResultsSecure');
+  
+  // Secure: Escaping user input before inserting into the DOM
+  const escapedQuery = escapeHTML(query);
+  resultDiv.innerHTML = `
+    &lt;h3&gt;Search results for: ${escapedQuery}&lt;/h3&gt;
+    &lt;p&gt;No results found.&lt;/p&gt;
+  `;
+}
+
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="search-form">
+                                    <label for="secure-search">Search:</label>
+                                    <input type="text" id="secure-search" placeholder="Try: <script>alert('XSS')</script>">
+                                    <button id="secure-search-btn">Search</button>
+                                </div>
+                                <div class="result-display" id="secure-result">
+                                    <div class="placeholder">Search results will appear here</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="stored">
+                    <div class="demo-description">
+                        <h3>Stored XSS</h3>
+                        <p>Stored XSS (also known as persistent XSS) occurs when the malicious script is stored on the target server, such as in a database, message forum, visitor log, or comment field, and then retrieved and displayed to other users later.</p>
+                    </div>
+                    
+                    <div class="demo-playground">
+                        <div class="vulnerable-section">
+                            <h4>Vulnerable Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Vulnerable code
+function addComment(name, comment) {
+  const commentsDiv = document.getElementById('comments');
+  
+  // Vulnerable: Directly inserting user input into the DOM
+  const commentHTML = `
+    &lt;div class="comment"&gt;
+      &lt;h4&gt;${name} says:&lt;/h4&gt;
+      &lt;p&gt;${comment}&lt;/p&gt;
+    &lt;/div&gt;
+  `;
+  
+  commentsDiv.innerHTML += commentHTML;
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="comment-form">
+                                    <div class="form-group">
+                                        <label for="vulnerable-name">Name:</label>
+                                        <input type="text" id="vulnerable-name" placeholder="Your name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vulnerable-comment">Comment:</label>
+                                        <textarea id="vulnerable-comment" placeholder="Try: <img src='x' onerror='alert(\"XSS\")'></textarea>
+                                    </div>
+                                    <button id="vulnerable-comment-btn">Add Comment</button>
+                                </div>
+                                <div class="comments-section" id="vulnerable-comments">
+                                    <h4>Comments</h4>
+                                    <div class="comments-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="secure-section">
+                            <h4>Secure Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Secure code
+function addCommentSecure(name, comment) {
+  const commentsDiv = document.getElementById('commentsSecure');
+  
+  // Secure: Escaping user input before inserting into the DOM
+  const escapedName = escapeHTML(name);
+  const escapedComment = escapeHTML(comment);
+  
+  const commentHTML = `
+    &lt;div class="comment"&gt;
+      &lt;h4&gt;${escapedName} says:&lt;/h4&gt;
+      &lt;p&gt;${escapedComment}&lt;/p&gt;
+    &lt;/div&gt;
+  `;
+  
+  commentsDiv.innerHTML += commentHTML;
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="comment-form">
+                                    <div class="form-group">
+                                        <label for="secure-name">Name:</label>
+                                        <input type="text" id="secure-name" placeholder="Your name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="secure-comment">Comment:</label>
+                                        <textarea id="secure-comment" placeholder="Try: <img src='x' onerror='alert(\"XSS\")'></textarea>
+                                    </div>
+                                    <button id="secure-comment-btn">Add Comment</button>
+                                </div>
+                                <div class="comments-section" id="secure-comments">
+                                    <h4>Comments</h4>
+                                    <div class="comments-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="dom">
+                    <div class="demo-description">
+                        <h3>DOM-based XSS</h3>
+                        <p>DOM-based XSS occurs when the vulnerability is in the client-side code rather than the server-side code. The source of the data is typically a JavaScript object that can be manipulated by the attacker.</p>
+                    </div>
+                    
+                    <div class="demo-playground">
+                        <div class="vulnerable-section">
+                            <h4>Vulnerable Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Vulnerable code
+function updateProfile() {
+  // Get the username from the URL: ?user=username
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('user');
+  
+  // Vulnerable: Directly inserting data from URL into the DOM
+  document.getElementById('profile-name').innerHTML = username || 'Guest';
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="url-form">
+                                    <label for="vulnerable-url">URL Parameter:</label>
+                                    <div class="url-input-group">
+                                        <span class="url-prefix">?user=</span>
+                                        <input type="text" id="vulnerable-url" placeholder="Try: <script>alert('XSS')</script>">
+                                        <button id="vulnerable-url-btn">Update</button>
+                                    </div>
+                                </div>
+                                <div class="profile-display">
+                                    <h4>User Profile</h4>
+                                    <div class="profile-card">
+                                        <div class="profile-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="profile-info">
+                                            <div class="profile-name" id="vulnerable-profile-name">Guest</div>
+                                            <div class="profile-role">User</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="secure-section">
+                            <h4>Secure Implementation</h4>
+                            <div class="code-editor">
+                                <pre><code class="language-javascript">// Secure code
+function updateProfileSecure() {
+  // Get the username from the URL: ?user=username
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get('user');
+  
+  // Secure: Using textContent instead of innerHTML
+  // OR escaping the input if HTML is needed
+  document.getElementById('profile-name-secure').textContent = username || 'Guest';
+}</code></pre>
+                            </div>
+                            
+                            <div class="demo-interface">
+                                <div class="url-form">
+                                    <label for="secure-url">URL Parameter:</label>
+                                    <div class="url-input-group">
+                                        <span class="url-prefix">?user=</span>
+                                        <input type="text" id="secure-url" placeholder="Try: <script>alert('XSS')</script>">
+                                        <button id="secure-url-btn">Update</button>
+                                    </div>
+                                </div>
+                                <div class="profile-display">
+                                    <h4>User Profile</h4>
+                                    <div class="profile-card">
+                                        <div class="profile-avatar">
+                                            <i class="fas fa-user-shield"></i>
+                                        </div>
+                                        <div class="profile-info">
+                                            <div class="profile-name" id="secure-profile-name">Guest</div>
+                                            <div class="profile-role">User</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="prevention">
+            <h2>XSS Prevention Techniques</h2>
+            <div class="prevention-grid">
+                <div class="prevention-card">
+                    <div class="prevention-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Input Validation</h3>
+                    <p>Validate user input on the server side. Implement whitelist validation rather than blacklist validation.</p>
+                </div>
+                
+                <div class="prevention-card">
+                    <div class="prevention-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>Output Encoding</h3>
+                    <p>Encode user-supplied data before displaying it in the browser. Use context-specific encoding.</p>
+                </div>
+                
+                <div class="prevention-card">
+                    <div class="prevention-icon">
+                        <i class="fas fa-cookie"></i>
+                    </div>
+                    <h3>Use HttpOnly Cookies</h3>
+                    <p>Set the HttpOnly flag on cookies to prevent JavaScript from accessing them.</p>
+                </div>
+                
+                <div class="prevention-card">
+                    <div class="prevention-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Content Security Policy</h3>
+                    <p>Implement CSP headers to restrict which scripts can be executed by the browser.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources">
+            <h2>Additional Resources</h2>
+            <ul class="resources-list">
+                <li>
+                    <i class="fas fa-book"></i>
+                    <a href="https://owasp.org/www-community/attacks/xss/" target="_blank">OWASP XSS Prevention Cheat Sheet</a>
+                </li>
+                <li>
+                    <i class="fas fa-graduation-cap"></i>
+                    <a href="https://portswigger.net/web-security/cross-site-scripting" target="_blank">PortSwigger Web Security Academy: XSS</a>
+                </li>
+                <li>
+                    <i class="fas fa-tools"></i>
+                    <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.md" target="_blank">OWASP XSS Prevention Cheat Sheet</a>
+                </li>
+            </ul>
+        </section>
+    </main>
+
+    <div class="back-to-home">
+        <a href="../index.html" class="btn"><i class="fas fa-home"></i> Back to Home</a>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Created for educational purposes only. Do not use these techniques on real websites without permission.</p>
+            <p><i class="fas fa-exclamation-triangle"></i> Remember: With great power comes great responsibility!</p>
+        </div>
+    </footer>
+
+    <script src="js/xss.js"></script>
+</body>
+</html>
