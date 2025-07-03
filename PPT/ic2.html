@@ -1228,6 +1228,8 @@ const origins = process.env.CORS_ORIGINS.split(',');
 
         window.onload = function() {
     document.getElementById('slide1Audio').play();
+    document.getElementById('slide1Audio').volume = 0.01;
+
 }
 
 function toggleSecurity() {
