@@ -192,6 +192,7 @@
             background: #1e1e1e; padding: 20px; border-radius: 15px;
             font-family: 'Fira Code', monospace; margin: 15px 0;
             border: 2px solid #4ecdc4; font-size: 0.9rem; line-height: 1.4;
+            color: #fff;
         }
         
         .danger-code { border-color: #ff4444; }
@@ -455,9 +456,12 @@
 
         <!-- SLIDE 1: Title Slide -->
         <div class="slide active" data-slide="0">
+            <audio style="visibility: hidden;" id="slide1Audio" autoplay loop controls>
+    <source src="https://ia800401.us.archive.org/12/items/pirates-of-the-caribbean-theme-song_202203/Pirates%20Of%20The%20Caribbean%20Theme%20Song.mp3?cnt=0" type="audio/mpeg">
+    </audio>
             <div class="slide-content title-slide">
                 <h1 class="glitch-text">Breaking & Building</h1>
-                <h2 class="subtitle">The Web Security Survival Guide</h2>
+                <h2 class="subtitle">The Web Security 101 : XSS, CSRF, CORS</h2>
                 <p style="font-size: 1.2rem; color: #ff6b35; font-style: italic;">
                     Or:  How to Ruin a Hacker's Day
                 </p>
@@ -476,7 +480,6 @@
                  <div class="stat-box big-number slide-content">
     <div class="security-header" onclick="toggleSecurity()">
         <h1 class="big-security">🌐 WEB SECURITY</h1>
-        <p class="click-hint">👆 Click to explore what this means at REA</p>
     </div>
     <div id="security-content" class="security-content hidden">
         <div class="security-definitions">
@@ -503,12 +506,12 @@
         <div class="slide" data-slide="2">
        
             <div class="slide-content">
-                <h1 style="color: #ff6b35;">🚨 The $2.3 Trillion Question</h1>
+                <h1 style="color: #ff6b35;">🚨 The $8 Trillion Question</h1>
                 
                 <div class="stats-container">
                     <div class="stat-box big-number">
-                        <div class="number">$2.3T</div>
-                        <div class="label">Web security failures cost globally in 2023</div>
+                        <div class="number">$8T</div>
+                        <div class="label">Web security failures cost globally in 2023 <a href="https://cybersecurityventures.com/cybercrime-to-cost-the-world-8-trillion-annually-in-2023/">🔗</a></div> 
                         <div class="label" style="margin-top: 15px; color: #ff6b35;">
                             That's more than most countries' GDP!
                         </div>
@@ -1223,12 +1226,18 @@ const origins = process.env.CORS_ORIGINS.split(',');
             skillRating: {}
         };
 
+        window.onload = function() {
+    document.getElementById('slide1Audio').play();
+}
+
 function toggleSecurity() {
     const content = document.getElementById('security-content');
     content.classList.toggle('hidden');
 }
         // Navigation functions
         function nextSlide() {
+                    document.getElementById('slide1Audio').pause();
+
             if (currentSlide < totalSlides) {
                 document.querySelector(`[data-slide="${currentSlide}"]`).classList.remove('active');
                 currentSlide++;
@@ -1239,7 +1248,7 @@ function toggleSecurity() {
         }
 
         function previousSlide() {
-            if (currentSlide > 1) {
+            if (currentSlide > 0) {
                 document.querySelector(`[data-slide="${currentSlide}"]`).classList.remove('active');
                 currentSlide--;
                 document.querySelector(`[data-slide="${currentSlide}"]`).classList.add('active');
